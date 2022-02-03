@@ -14,6 +14,7 @@ import { CompanyEntity } from '../company/company.entity';
 import { MenuEntity } from '../menu/menu.entity';
 import { UserMenuEntity } from '../user-menu/user-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
+import { RoleMenuEntity } from "../company-role/role-menu.entity";
 
 @Injectable()
 export class UserService {
@@ -360,6 +361,14 @@ export class UserService {
 
         user.menus.push(saved);
         user = await getRepository(UserEntity).save(user);
+      }
+      if(role > -1){
+        await getRepository(RoleMenuEntity).createQueryBuilder('role_menu')
+        .update(RoleMenuEntity)
+        .set({permission: permission})
+        .where("nest_role_menu.menuId = :menu_id", { menu_id: one.id })
+        .andWhere("nest_role_menu.roleId = :role_id", { role_id: role })
+        .execute();
       }
     }
 

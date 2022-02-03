@@ -18,6 +18,8 @@ node_modules
 ormconfig.json
 src/config.ts
 
+dist
+
 # code testing coverage
 coverage
 

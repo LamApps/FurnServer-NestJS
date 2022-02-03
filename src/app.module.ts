@@ -22,16 +22,28 @@ import { EmailModule } from './email/email.module';
 import { ApiModule } from './api/api.module';
 import { QrcodeModule } from './qrcode/qrcode.module';
 import { MenuModule } from './menu/menu.module';
+import { getMetadataArgsStorage } from 'typeorm';
 
 import { MailerModule } from '@nestjs-modules/mailer';
 import { CompanyMenuModule } from './company-menu/company-menu.module';
 import { UserMenuModule } from './user-menu/user-menu.module';
 import { CompanyRoleModule } from './company-role/company-role.module';
 import { UtilsModule } from './utils/utils.module';
+import { CodeModule } from './code/code.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: "mysql",
+      host: "localhost",
+      port: 3306,
+      username: "root",
+      password: "",
+      database: "furnserve",
+      // entities: ["src/**/**.entity{.ts,.js}"],
+      entities: getMetadataArgsStorage().tables.map(tbl => tbl.target),
+      synchronize: true
+    }),
     UserModule,
     AdminuserModule,
     RolesModule,
@@ -68,6 +80,7 @@ import { UtilsModule } from './utils/utils.module';
     UserMenuModule,
     CompanyRoleModule,
     UtilsModule,
+    CodeModule
   ],
   controllers: [
     AppController

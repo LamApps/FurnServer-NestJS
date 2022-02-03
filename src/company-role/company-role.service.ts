@@ -8,6 +8,8 @@ import { CompanyRoleEntity } from './company-role.entity';
 import { CreateCompanyRoleDto } from './dto/create-company-role.dto';
 import { UpdateCompanyRoleDto } from './dto/update-company-role.dto';
 import { RoleMenuEntity } from './role-menu.entity';
+import { UserMenuEntity } from '../user-menu/user-menu.entity';
+
 
 @Injectable()
 export class CompanyRoleService {
@@ -129,6 +131,7 @@ export class CompanyRoleService {
 
         const saved = await getRepository(RoleMenuEntity).save(roleMenu);
         roleEnity.menus.push(saved);
+          
       } else {
         var company_menu_entity = await getRepository(CompanyMenuEntity)
         .createQueryBuilder('company_menu')

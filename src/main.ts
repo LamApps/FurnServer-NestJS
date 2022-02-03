@@ -4,6 +4,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
+declare const module: any;
+
 async function bootstrap() {
   const appOptions = {cors: true};
   const app = await NestFactory.create<NestExpressApplication>(
@@ -27,9 +29,9 @@ async function bootstrap() {
 
   await app.listen(4201);
 
-  // if (module.hot) {
-  //   module.hot.accept();
-  //   module.hot.dispose(() => app.close());
-  // }
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 bootstrap();
