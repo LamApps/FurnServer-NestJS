@@ -16,7 +16,9 @@ export class CreateAppsDto {
 
     @IsNotEmpty()
     readonly menu_password: string;
-	
+
+    @IsNotEmpty()
+    readonly companies: string;	
 
     @IsNotEmpty()
     readonly active: boolean;

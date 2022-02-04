@@ -5208,6 +5208,10 @@ __decorate([
 ], CreateAppsDto.prototype, "menu_password", void 0);
 __decorate([
     decorators_1.IsNotEmpty(),
+    __metadata("design:type", String)
+], CreateAppsDto.prototype, "companies", void 0);
+__decorate([
+    decorators_1.IsNotEmpty(),
     __metadata("design:type", Boolean)
 ], CreateAppsDto.prototype, "active", void 0);
 exports.CreateAppsDto = CreateAppsDto;
@@ -8259,9 +8263,11 @@ let CodeService = class CodeService {
     async create(createCodeDto) {
         let code = new code_entity_1.CodeEntity();
         code.description = createCodeDto.description;
-        code.content = createCodeDto.code;
+        code.content = createCodeDto.content;
         code.page = createCodeDto.page;
         code.active = createCodeDto.active;
+        if (createCodeDto.company > 0)
+            code.company = createCodeDto.company;
         const errors = await class_validator_1.validate(code);
         if (errors.length > 0) {
             return {
@@ -8274,10 +8280,13 @@ let CodeService = class CodeService {
             return { status: common_1.HttpStatus.OK, item: savedCode };
         }
     }
-    async findAll() {
-        const qb = await typeorm_2.getRepository(code_entity_1.CodeEntity)
+    async findAll(company) {
+        let qb = typeorm_2.getRepository(code_entity_1.CodeEntity)
             .createQueryBuilder('code')
             .leftJoinAndSelect('code.company', 'company');
+        if (company > 0) {
+            qb = qb.where('company.id = :id', { id: company });
+        }
         const codes = await qb.getMany();
         return { items: codes, totalCount: codes.length };
     }
@@ -8299,8 +8308,11 @@ let CodeService = class CodeService {
                 message: 'There is not Role.'
             };
         }
-        await this.codeRepository.update(id, updateCodeDto);
-        const updated = await this.codeRepository.findOne({ id: id });
+        code.description = updateCodeDto.description;
+        code.content = updateCodeDto.content;
+        code.page = updateCodeDto.page;
+        code.active = updateCodeDto.active;
+        const updated = await this.codeRepository.save(code);
         return { item: updated };
     }
     async remove(id) {
@@ -8354,8 +8366,8 @@ let CodeController = class CodeController {
     create(createCodeDto) {
         return this.codeService.create(createCodeDto);
     }
-    findAll() {
-        return this.codeService.findAll();
+    findAll(company) {
+        return this.codeService.findAll(company);
     }
     findOne(id) {
         return this.codeService.findOne(+id);
@@ -8376,8 +8388,9 @@ __decorate([
 ], CodeController.prototype, "create", null);
 __decorate([
     common_1.Get(),
+    __param(0, common_1.Query('company')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], CodeController.prototype, "findAll", null);
 __decorate([
@@ -8434,7 +8447,7 @@ __decorate([
 __decorate([
     decorators_1.IsNotEmpty(),
     __metadata("design:type", String)
-], CreateCodeDto.prototype, "code", void 0);
+], CreateCodeDto.prototype, "content", void 0);
 exports.CreateCodeDto = CreateCodeDto;
 
 
@@ -8464,7 +8477,7 @@ __decorate([
 __decorate([
     class_validator_1.IsNotEmpty(),
     __metadata("design:type", String)
-], UpdateCodeDto.prototype, "code", void 0);
+], UpdateCodeDto.prototype, "content", void 0);
 exports.UpdateCodeDto = UpdateCodeDto;
 
 
@@ -8530,7 +8543,7 @@ exports.UpdateCodeDto = UpdateCodeDto;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("ce11535d1dd02382bfab")
+/******/ 		__webpack_require__.h = () => ("3b03687a0cbb799da02f")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */

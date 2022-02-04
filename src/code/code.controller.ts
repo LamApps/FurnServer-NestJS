@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
 import { CodeService } from './code.service';
 import { CreateCodeDto } from './dto/create-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
@@ -13,8 +13,8 @@ export class CodeController {
   }
 
   @Get()
-  findAll() {
-    return this.codeService.findAll();
+  findAll(@Query('company') company: number) {
+    return this.codeService.findAll(company);
   }
 
   @Get(':id')

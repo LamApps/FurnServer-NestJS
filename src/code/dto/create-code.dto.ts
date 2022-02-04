@@ -7,7 +7,7 @@ export class CreateCodeDto {
     description: string;
 
     @IsNotEmpty()
-    code: string;
+    content: string;
 
     page: string;
     active: boolean;

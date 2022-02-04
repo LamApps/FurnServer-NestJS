@@ -19,9 +19,10 @@ export class CodeService {
   async create(createCodeDto: CreateCodeDto) {
     let code = new CodeEntity();
     code.description = createCodeDto.description;
-    code.content = createCodeDto.code;
+    code.content = createCodeDto.content;
     code.page = createCodeDto.page;
     code.active = createCodeDto.active;
+    if(createCodeDto.company>0) code.company = createCodeDto.company;
 
     const errors = await validate(code);
     if (errors.length > 0) {
@@ -41,10 +42,13 @@ export class CodeService {
     }
   }
 
-  async findAll() {
-    const qb = await getRepository(CodeEntity)
+  async findAll(company: number) {
+    let qb = getRepository(CodeEntity)
     .createQueryBuilder('code')
     .leftJoinAndSelect('code.company', 'company');
+    if(company>0){
+      qb = qb.where('company.id = :id', {id: company});
+    }
 
     const codes = await qb.getMany();
     return { items: codes, totalCount: codes.length }
@@ -69,8 +73,12 @@ export class CodeService {
         message: 'There is not Role.'
       }
     }
-    await this.codeRepository.update(id, updateCodeDto);
-    const updated = await this.codeRepository.findOne({ id: id });
+    code.description = updateCodeDto.description;
+    code.content = updateCodeDto.content;
+    code.page = updateCodeDto.page;
+    code.active = updateCodeDto.active;
+    
+    const updated = await this.codeRepository.save(code);
     return { item : updated };
   }
 
