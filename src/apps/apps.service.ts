@@ -12,6 +12,8 @@ export class AppsService {
   constructor(
     @InjectRepository(AppsEntity)
     private readonly appsRepository: Repository<AppsEntity>,
+    @InjectRepository(CompanyEntity)
+    private readonly companyRepository: Repository<CompanyEntity>
   ) {}
   
   async create(createAppsDto: CreateAppsDto) {
@@ -47,11 +49,11 @@ export class AppsService {
     } else {
 
       const savedApps = await this.appsRepository.save(newApps);
-      /*
-      const company = await this.companyRepository.findOne({ where: { id: createUuidDto.company }, relations: ['uuids'] });
-      company.uuids.push(savedUuid);
+      
+      const company = await this.companyRepository.findOne({ where: { id: createAppsDto.companies }, relations: ['apps'] });
+      company.apps.push(savedApps);
       await this.companyRepository.save(company);
-     */ 
+      
       return { status: HttpStatus.OK, item: savedApps }
     }
   }

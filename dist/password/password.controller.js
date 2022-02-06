@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const password_service_1 = require("./password.service");
@@ -31,30 +22,20 @@ let PasswordController = class PasswordController {
     constructor(passwordService) {
         this.passwordService = passwordService;
     }
-    create(createPasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.passwordService.create(createPasswordDto);
-        });
+    async create(createPasswordDto) {
+        return this.passwordService.create(createPasswordDto);
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.passwordService.findAll();
-        });
+    async findAll() {
+        return this.passwordService.findAll();
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.passwordService.findOne(+id);
-        });
+    async findOne(id) {
+        return this.passwordService.findOne(+id);
     }
-    update(id, updatePasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.passwordService.update(+id, updatePasswordDto);
-        });
+    async update(id, updatePasswordDto) {
+        return this.passwordService.update(+id, updatePasswordDto);
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.passwordService.remove(+id);
-        });
+    async remove(id) {
+        return this.passwordService.remove(+id);
     }
 };
 __decorate([

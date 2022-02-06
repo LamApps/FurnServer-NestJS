@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -32,79 +23,69 @@ let PasswordService = class PasswordService {
         this.passwordRepository = passwordRepository;
         this.userRepository = userRepository;
     }
-    create(createPasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { code } = createPasswordDto;
-            const qb = yield typeorm_2.getRepository(password_entity_1.PasswordEntity)
-                .createQueryBuilder('password')
-                .where('password.code = :code', { code });
-            const company = yield qb.getOne();
-            if (company) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'Code must be unique.'
-                };
-            }
-            let newPassword = new password_entity_1.PasswordEntity();
-            newPassword.code = createPasswordDto.code;
-            newPassword.name = createPasswordDto.name;
-            newPassword.description = createPasswordDto.description;
-            const errors = yield class_validator_1.validate(newPassword);
-            if (errors.length > 0) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: errors
-                };
-            }
-            else {
-                const savedPassword = yield this.passwordRepository.save(newPassword);
-                return { item: savedPassword };
-            }
-        });
+    async create(createPasswordDto) {
+        const { code } = createPasswordDto;
+        const qb = await typeorm_2.getRepository(password_entity_1.PasswordEntity)
+            .createQueryBuilder('password')
+            .where('password.code = :code', { code });
+        const company = await qb.getOne();
+        if (company) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Code must be unique.'
+            };
+        }
+        let newPassword = new password_entity_1.PasswordEntity();
+        newPassword.code = createPasswordDto.code;
+        newPassword.name = createPasswordDto.name;
+        newPassword.description = createPasswordDto.description;
+        const errors = await class_validator_1.validate(newPassword);
+        if (errors.length > 0) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: errors
+            };
+        }
+        else {
+            const savedPassword = await this.passwordRepository.save(newPassword);
+            return { item: savedPassword };
+        }
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const passwords = yield this.passwordRepository.find();
-            return { items: passwords, totalCount: passwords.length };
-        });
+    async findAll() {
+        const passwords = await this.passwordRepository.find();
+        return { items: passwords, totalCount: passwords.length };
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.passwordRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            return { item: password };
-        });
+    async findOne(id) {
+        const password = await this.passwordRepository.findOne({ id: id });
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        return { item: password };
     }
-    update(id, updatePasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.passwordRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            yield this.passwordRepository.update(id, updatePasswordDto);
-            const updated = yield this.passwordRepository.findOne({ id: id });
-            return { item: updated };
-        });
+    async update(id, updatePasswordDto) {
+        const password = await this.passwordRepository.findOne({ id: id });
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        await this.passwordRepository.update(id, updatePasswordDto);
+        const updated = await this.passwordRepository.findOne({ id: id });
+        return { item: updated };
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.passwordRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            return yield this.passwordRepository.delete({ id: id });
-        });
+    async remove(id) {
+        const password = await this.passwordRepository.findOne({ id: id });
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        return await this.passwordRepository.delete({ id: id });
     }
 };
 PasswordService = __decorate([

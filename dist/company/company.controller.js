@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const role_enum_1 = require("../enum/role.enum");
@@ -31,20 +22,17 @@ let CompanyController = class CompanyController {
     constructor(companyService) {
         this.companyService = companyService;
     }
-    create(createCompanyDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.companyService.create(createCompanyDto);
-        });
+    async create(createCompanyDto) {
+        return await this.companyService.create(createCompanyDto);
     }
-    enable(id, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.companyService.enable(+id, dto);
-        });
+    async permission(id, dto) {
+        return await this.companyService.updatePermission(+id, dto);
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.companyService.findAll();
-        });
+    async enable(id, dto) {
+        return await this.companyService.enable(+id, dto);
+    }
+    async findAll() {
+        return await this.companyService.findAll();
     }
     findOne(id) {
         return this.companyService.findOne(+id);
@@ -65,6 +53,14 @@ __decorate([
     __metadata("design:paramtypes", [create_company_dto_1.CreateCompanyDto]),
     __metadata("design:returntype", Promise)
 ], CompanyController.prototype, "create", null);
+__decorate([
+    common_1.Post('permission/:id'),
+    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
+    __param(0, common_1.Param('id')), __param(1, common_1.Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], CompanyController.prototype, "permission", null);
 __decorate([
     common_1.Post('enable/:id'),
     __param(0, common_1.Param('id')), __param(1, common_1.Body()),
@@ -88,7 +84,6 @@ __decorate([
 __decorate([
     common_1.Put(':id'),
     common_1.UsePipes(new common_1.ValidationPipe()),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')), __param(1, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_company_dto_1.UpdateCompanyDto]),
@@ -96,7 +91,6 @@ __decorate([
 ], CompanyController.prototype, "update", null);
 __decorate([
     common_1.Delete(':id'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

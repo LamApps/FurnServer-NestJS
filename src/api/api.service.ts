@@ -119,7 +119,7 @@ export class ApiService {
             for (let unique_id = 1; unique_id < 1000; unique_id++) {
                 let exist: boolean = false;
                 uuids.forEach(item => {
-                    if (item.unique_id == unique_id) {
+                    if (item.unique_id == ('000' + unique_id).substr(-3)) {
                         exist = true;
                     }
                 });
@@ -129,7 +129,7 @@ export class ApiService {
                     _uuid.last_date_verified = new Date().toLocaleDateString();
                     _uuid.version = version;
                     _uuid.active = company.first_time_status;
-                    _uuid.unique_id = unique_id;
+                    _uuid.unique_id = ('000' + unique_id).substr(-3);
 
                     const saved = await getRepository(UUIDEntity).save(_uuid);
       

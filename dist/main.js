@@ -1528,8 +1528,8 @@ __decorate([
     __metadata("design:type", Number)
 ], UUIDEntity.prototype, "id", void 0);
 __decorate([
-    typeorm_1.Column({ default: 0 }),
-    __metadata("design:type", Number)
+    typeorm_1.Column({ default: "" }),
+    __metadata("design:type", String)
 ], UUIDEntity.prototype, "unique_id", void 0);
 __decorate([
     typeorm_1.Column({ default: "" }),
@@ -2383,7 +2383,7 @@ let AdminuserService = class AdminuserService {
             id: user.id,
             username: user.username,
             email: user.email,
-            exp: new Date().getTime() / 1000 + 12 * 3600,
+            exp: new Date().getTime() / 1000 + 20 * 60,
             isAdmin: true,
         }, config_1.SECRET);
     }
@@ -4706,7 +4706,18 @@ let UuidService = class UuidService {
                 message: 'UUID must be unique.'
             };
         }
+        const qb1 = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id });
+        const uuid1 = await qb1.getOne();
+        if (uuid1) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Unique ID must be unique.'
+            };
+        }
         let newUuid = new uuid_entity_1.UUIDEntity();
+        newUuid.unique_id = createUuidDto.unique_id;
         newUuid.uuid = createUuidDto.uuid;
         newUuid.description = createUuidDto.description;
         newUuid.last_date_verified = createUuidDto.last_date_verified;
@@ -4727,6 +4738,12 @@ let UuidService = class UuidService {
             return { status: common_1.HttpStatus.OK, item: savedUuid };
         }
     }
+    async getLatestUniqueId() {
+        let uuid = await this.uuidRepository.findOne({
+            order: { id: 'DESC' }
+        });
+        return { id: uuid ? uuid.id : 0 };
+    }
     async findAll(company) {
         const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
             .createQueryBuilder('uuid')
@@ -4746,6 +4763,17 @@ let UuidService = class UuidService {
         return { item: uuid };
     }
     async update(id, updateUuidDto) {
+        const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .where('uuid.unique_id = :unique_id', { unique_id: updateUuidDto.unique_id });
+        const orig_uuid = await qb.getOne();
+        console.log(orig_uuid, id);
+        if (orig_uuid && orig_uuid.id != id) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Unique ID must be unique.'
+            };
+        }
         let uuid = await this.uuidRepository.findOne(id);
         if (!uuid) {
             return {
@@ -4753,6 +4781,7 @@ let UuidService = class UuidService {
                 message: 'There is not uuid.'
             };
         }
+        uuid.unique_id = updateUuidDto.unique_id;
         uuid.last_date_verified = updateUuidDto.last_date_verified;
         uuid.description = updateUuidDto.description;
         uuid.version = updateUuidDto.version;
@@ -4815,6 +4844,9 @@ let UuidController = class UuidController {
     async findAll(company) {
         return this.uuidService.findAll(+company);
     }
+    async getLatestUniqueId() {
+        return this.uuidService.getLatestUniqueId();
+    }
     findOne(id) {
         return this.uuidService.findOne(+id);
     }
@@ -4840,6 +4872,12 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], UuidController.prototype, "findAll", null);
+__decorate([
+    common_1.Get('getUid'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UuidController.prototype, "getLatestUniqueId", null);
 __decorate([
     common_1.Get(':id'),
     __param(0, common_1.Param('id')),
@@ -4888,6 +4926,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const class_validator_1 = __webpack_require__(30);
 class CreateUuidDto {
 }
+__decorate([
+    class_validator_1.IsNotEmpty(),
+    __metadata("design:type", String)
+], CreateUuidDto.prototype, "unique_id", void 0);
 __decorate([
     class_validator_1.IsNotEmpty(),
     __metadata("design:type", String)
@@ -4981,16 +5023,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const common_1 = __webpack_require__(6);
 const typeorm_1 = __webpack_require__(11);
 const typeorm_2 = __webpack_require__(12);
+const company_entity_1 = __webpack_require__(15);
 const apps_entity_1 = __webpack_require__(19);
 const class_validator_1 = __webpack_require__(30);
 let AppsService = class AppsService {
-    constructor(appsRepository) {
+    constructor(appsRepository, companyRepository) {
         this.appsRepository = appsRepository;
+        this.companyRepository = companyRepository;
     }
     async create(createAppsDto) {
         const { type } = createAppsDto;
@@ -5021,6 +5065,9 @@ let AppsService = class AppsService {
         }
         else {
             const savedApps = await this.appsRepository.save(newApps);
+            const company = await this.companyRepository.findOne({ where: { id: createAppsDto.companies }, relations: ['apps'] });
+            company.apps.push(savedApps);
+            await this.companyRepository.save(company);
             return { status: common_1.HttpStatus.OK, item: savedApps };
         }
     }
@@ -5076,7 +5123,8 @@ let AppsService = class AppsService {
 AppsService = __decorate([
     common_1.Injectable(),
     __param(0, typeorm_1.InjectRepository(apps_entity_1.AppsEntity)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object])
+    __param(1, typeorm_1.InjectRepository(company_entity_1.CompanyEntity)),
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object])
 ], AppsService);
 exports.AppsService = AppsService;
 
@@ -6616,7 +6664,7 @@ let ApiService = class ApiService {
             for (let unique_id = 1; unique_id < 1000; unique_id++) {
                 let exist = false;
                 uuids.forEach(item => {
-                    if (item.unique_id == unique_id) {
+                    if (item.unique_id == ('000' + unique_id).substr(-3)) {
                         exist = true;
                     }
                 });
@@ -6626,7 +6674,7 @@ let ApiService = class ApiService {
                     _uuid.last_date_verified = new Date().toLocaleDateString();
                     _uuid.version = version;
                     _uuid.active = company.first_time_status;
-                    _uuid.unique_id = unique_id;
+                    _uuid.unique_id = ('000' + unique_id).substr(-3);
                     const saved = await typeorm_1.getRepository(uuid_entity_1.UUIDEntity).save(_uuid);
                     const _company = await typeorm_1.getRepository(company_entity_1.CompanyEntity).findOne({ where: { id: company.id }, relations: ['uuids'] });
                     _company.uuids.push(saved);
@@ -8266,8 +8314,6 @@ let CodeService = class CodeService {
         code.content = createCodeDto.content;
         code.page = createCodeDto.page;
         code.active = createCodeDto.active;
-        if (createCodeDto.company > 0)
-            code.company = createCodeDto.company;
         const errors = await class_validator_1.validate(code);
         if (errors.length > 0) {
             return {
@@ -8277,6 +8323,11 @@ let CodeService = class CodeService {
         }
         else {
             const savedCode = await this.codeRepository.save(code);
+            if (createCodeDto.company > 0) {
+                const company = await this.companyRepository.findOne({ where: { id: createCodeDto.company }, relations: ['codes'] });
+                company.codes.push(savedCode);
+                await this.companyRepository.save(company);
+            }
             return { status: common_1.HttpStatus.OK, item: savedCode };
         }
     }
@@ -8543,7 +8594,7 @@ exports.UpdateCodeDto = UpdateCodeDto;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("3b03687a0cbb799da02f")
+/******/ 		__webpack_require__.h = () => ("7c5e6e448421927c6590")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */

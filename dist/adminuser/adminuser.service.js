@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -37,149 +28,145 @@ let AdminuserService = class AdminuserService {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
-                .createQueryBuilder('adminuser')
-                .leftJoinAndSelect('adminuser.roles', 'roles');
-            const users = yield qb.getMany();
-            return { items: users, totalCount: users.length };
-        });
+    async findAll() {
+        const qb = await typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
+            .createQueryBuilder('adminuser')
+            .leftJoinAndSelect('adminuser.roles', 'roles');
+        const users = await qb.getMany();
+        return { items: users, totalCount: users.length };
     }
-    find(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
-                .createQueryBuilder('adminuser')
-                .leftJoinAndSelect('adminuser.roles', 'roles');
-            const user = yield qb.where({ id: id }).getOne();
-            user.role = user.roles.name.toLowerCase();
-            user.email = user.email + '|admin';
-            if (!user) {
-                return {
-                    status: common_2.HttpStatus.BAD_REQUEST,
-                    message: 'There is not user.'
-                };
-            }
-            return { item: user };
-        });
+    async find(id) {
+        const qb = await typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
+            .createQueryBuilder('adminuser')
+            .leftJoinAndSelect('adminuser.roles', 'roles');
+        const user = await qb.where({ id: id }).getOne();
+        user.role = user.roles.name.toLowerCase();
+        user.email = user.email;
+        if (!user) {
+            return {
+                status: common_2.HttpStatus.BAD_REQUEST,
+                message: 'There is not user.'
+            };
+        }
+        return { item: user };
     }
-    findOne({ username, password }) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
-                .createQueryBuilder('adminuser')
-                .leftJoinAndSelect('adminuser.roles', 'roles');
-            const user = yield qb.where({ username: username }).getOne();
-            user.role = user.roles.name.toLowerCase();
-            user.email = user.email + '|admin';
-            if (!user) {
-                return null;
-            }
-            if (yield argon2.verify(user.password, password)) {
-                return user;
-            }
+    async findOne({ username, password }) {
+        const qb = await typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
+            .createQueryBuilder('adminuser')
+            .leftJoinAndSelect('adminuser.roles', 'roles');
+        const user = await qb.where({ username: username }).getOne();
+        if (!user) {
             return null;
-        });
+        }
+        user.role = user.roles.name.toLowerCase();
+        user.email = user.email;
+        if (await argon2.verify(user.password, password)) {
+            return user;
+        }
+        return null;
     }
-    create(dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { username, email, password, position, firstname, lastname, login, role, birthday, active } = dto;
-            const qb = yield typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
-                .createQueryBuilder('adminuser')
-                .where('adminuser.username = :username', { username })
-                .orWhere('adminuser.email = :email', { email });
-            const user = yield qb.getOne();
-            if (user) {
-                return {
-                    status: common_2.HttpStatus.BAD_REQUEST,
-                    message: 'Username and email must be unique.'
-                };
-            }
-            let newUser = new adminuser_entity_1.AdminuserEntity();
-            newUser.username = username;
-            newUser.email = email;
-            newUser.password = password;
-            newUser.active = active;
-            newUser.role = role;
-            newUser.firstname = firstname;
-            newUser.lastname = lastname;
-            newUser.position = position;
-            newUser.login = login;
-            newUser.birthday = birthday;
-            const errors = yield class_validator_1.validate(newUser);
-            if (errors.length > 0) {
-                return {
-                    status: common_2.HttpStatus.BAD_REQUEST,
-                    message: 'Userinput is not valid.'
-                };
-            }
-            else {
-                const savedUser = yield this.userRepository.save(newUser);
-                const roles = yield this.rolesRepository.findOne({ where: { id: dto.roles }, relations: ['adminusers'] });
-                roles.adminusers.push(newUser);
-                yield this.rolesRepository.save(roles);
-                return { user: savedUser };
-            }
-        });
+    async create(dto) {
+        const { username, email, password, position, firstname, lastname, role, birthday, active, mobile } = dto;
+        const qb = await typeorm_2.getRepository(adminuser_entity_1.AdminuserEntity)
+            .createQueryBuilder('adminuser')
+            .where('adminuser.username = :username', { username })
+            .orWhere('adminuser.email = :email', { email });
+        const user = await qb.getOne();
+        if (user) {
+            return {
+                status: common_2.HttpStatus.BAD_REQUEST,
+                message: 'Username and email must be unique.'
+            };
+        }
+        let newUser = new adminuser_entity_1.AdminuserEntity();
+        newUser.username = username;
+        newUser.email = email;
+        newUser.password = password;
+        newUser.active = active;
+        newUser.role = role;
+        newUser.firstname = firstname;
+        newUser.lastname = lastname;
+        newUser.position = position;
+        newUser.birthday = birthday;
+        newUser.mobile = mobile;
+        const errors = await class_validator_1.validate(newUser);
+        if (errors.length > 0) {
+            return {
+                status: common_2.HttpStatus.BAD_REQUEST,
+                message: 'Userinput is not valid.'
+            };
+        }
+        else {
+            const savedUser = await this.userRepository.save(newUser);
+            const roles = await this.rolesRepository.findOne({ where: { id: dto.roles }, relations: ['adminusers'] });
+            roles.adminusers.push(newUser);
+            await this.rolesRepository.save(roles);
+            return { user: savedUser };
+        }
     }
-    update(id, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let user = yield this.userRepository.findOne(id);
-            if (!user) {
-                return {
-                    status: common_2.HttpStatus.BAD_REQUEST,
-                    message: 'There is not user.'
-                };
-            }
-            user.role = dto.role;
-            user.birthday = dto.birthday;
-            user.firstname = dto.firstname;
-            user.lastname = dto.lastname;
-            user.position = dto.position;
-            user.login = dto.login;
-            user.email = dto.email;
-            user.active = dto.active;
-            yield this.userRepository.update(id, user);
-            const updated = yield this.userRepository.findOne(id);
-            return { item: updated };
-        });
+    async update(id, dto) {
+        let user = await this.userRepository.findOne(id);
+        if (!user) {
+            return {
+                status: common_2.HttpStatus.BAD_REQUEST,
+                message: 'There is not user.'
+            };
+        }
+        user.role = dto.role;
+        user.birthday = dto.birthday;
+        user.firstname = dto.firstname;
+        user.lastname = dto.lastname;
+        user.position = dto.position;
+        user.email = dto.email;
+        user.active = dto.active;
+        if (dto.mobile && dto.mobile != "") {
+            user.mobile = dto.mobile;
+        }
+        if (dto.photo && dto.photo != "") {
+            user.photo = dto.photo;
+        }
+        if (dto.password && dto.password !== "") {
+            user.password = await argon2.hash(dto.password);
+        }
+        await this.userRepository.update(id, user);
+        const updated = await this.userRepository.findOne(id);
+        return { item: updated };
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.userRepository.findOne({ id: id });
-            if (!user) {
-                return {
-                    status: common_2.HttpStatus.BAD_REQUEST,
-                    message: 'There is not user.'
-                };
-            }
-            return yield this.userRepository.delete({ id: id });
-        });
+    async remove(id) {
+        const user = await this.userRepository.findOne({ id: id });
+        if (!user) {
+            return {
+                status: common_2.HttpStatus.BAD_REQUEST,
+                message: 'There is not user.'
+            };
+        }
+        return await this.userRepository.delete({ id: id });
     }
-    findById(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.userRepository.findOne(id);
-            if (!user) {
-                const errors = { User: 'admin user not found' };
-                throw new http_exception_1.HttpException({ errors }, 401);
-            }
-            return this.buildUserRO(user);
-        });
+    async findById(id) {
+        const user = await this.userRepository.findOne(id);
+        if (!user) {
+            const errors = { User: 'admin user not found' };
+            throw new http_exception_1.HttpException({ errors }, 401);
+        }
+        return this.buildUserRO(user);
     }
-    findByEmail(email) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.userRepository.findOne({ email: email });
-            return this.buildUserRO(user);
-        });
+    async findByEmail(email) {
+        const user = await this.userRepository.findOne({ email: email });
+        return this.buildUserRO(user);
+    }
+    async update_login(id, token) {
+        let user = await this.userRepository.findOne(id);
+        user.token = token;
+        await this.userRepository.update(id, user);
+        return await this.find(id);
     }
     generateJWT(user) {
-        let today = new Date();
-        let exp = new Date(today);
-        exp.setDate(today.getDate() + 60);
         return jwt.sign({
             id: user.id,
             username: user.username,
             email: user.email,
-            exp: exp.getTime() / 1000,
+            exp: new Date().getTime() / 1000 + 12 * 3600,
+            isAdmin: true,
         }, config_1.SECRET);
     }
     ;

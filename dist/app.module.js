@@ -24,6 +24,7 @@ const device_module_1 = require("./device/device.module");
 const core_1 = require("@nestjs/core");
 const roles_guard_1 = require("./user/roles.guard");
 const uuid_module_1 = require("./uuid/uuid.module");
+const apps_module_1 = require("./apps/apps.module");
 const password_module_1 = require("./password/password.module");
 const category_module_1 = require("./category/category.module");
 const option_module_1 = require("./option/option.module");
@@ -31,7 +32,14 @@ const company_password_module_1 = require("./company-password/company-password.m
 const email_module_1 = require("./email/email.module");
 const api_module_1 = require("./api/api.module");
 const qrcode_module_1 = require("./qrcode/qrcode.module");
+const menu_module_1 = require("./menu/menu.module");
+const typeorm_3 = require("typeorm");
 const mailer_1 = require("@nestjs-modules/mailer");
+const company_menu_module_1 = require("./company-menu/company-menu.module");
+const user_menu_module_1 = require("./user-menu/user-menu.module");
+const company_role_module_1 = require("./company-role/company-role.module");
+const utils_module_1 = require("./utils/utils.module");
+const code_module_1 = require("./code/code.module");
 let ApplicationModule = class ApplicationModule {
     constructor(connection) {
         this.connection = connection;
@@ -40,7 +48,16 @@ let ApplicationModule = class ApplicationModule {
 ApplicationModule = __decorate([
     common_1.Module({
         imports: [
-            typeorm_1.TypeOrmModule.forRoot(),
+            typeorm_1.TypeOrmModule.forRoot({
+                type: "mysql",
+                host: "localhost",
+                port: 3306,
+                username: "root",
+                password: "Spurlock26!",
+                database: "invoice",
+                entities: typeorm_3.getMetadataArgsStorage().tables.map(tbl => tbl.target),
+                synchronize: true
+            }),
             user_module_1.UserModule,
             adminuser_module_1.AdminuserModule,
             roles_module_1.RolesModule,
@@ -53,10 +70,12 @@ ApplicationModule = __decorate([
             password_module_1.PasswordModule,
             category_module_1.CategoryModule,
             option_module_1.OptionModule,
+            apps_module_1.AppsModule,
             company_password_module_1.CompanyPasswordModule,
             email_module_1.EmailModule,
             api_module_1.ApiModule,
             qrcode_module_1.QrcodeModule,
+            menu_module_1.MenuModule,
             mailer_1.MailerModule.forRoot({
                 transport: {
                     host: "furnserve.email",
@@ -71,6 +90,11 @@ ApplicationModule = __decorate([
                     }
                 }
             }),
+            company_menu_module_1.CompanyMenuModule,
+            user_menu_module_1.UserMenuModule,
+            company_role_module_1.CompanyRoleModule,
+            utils_module_1.UtilsModule,
+            code_module_1.CodeModule
         ],
         controllers: [
             app_controller_1.AppController

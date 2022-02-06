@@ -24,7 +24,7 @@ let UserModule = class UserModule {
     configure(consumer) {
         consumer
             .apply(auth_middleware_1.AuthMiddleware)
-            .forRoutes({ path: 'user/:id', method: common_1.RequestMethod.GET }, { path: 'user/:id', method: common_1.RequestMethod.PUT }, { path: 'user/:id', method: common_1.RequestMethod.DELETE }, { path: 'user', method: common_1.RequestMethod.POST }, { path: 'uploadPhoto', method: common_1.RequestMethod.POST }, { path: 'user', method: common_1.RequestMethod.GET });
+            .forRoutes({ path: 'user/:id', method: common_1.RequestMethod.GET }, { path: 'user/:id', method: common_1.RequestMethod.PUT }, { path: 'user/:id', method: common_1.RequestMethod.DELETE }, { path: 'user/permission/:id', method: common_1.RequestMethod.POST }, { path: 'user', method: common_1.RequestMethod.POST }, { path: 'uploadPhoto', method: common_1.RequestMethod.POST }, { path: 'user', method: common_1.RequestMethod.GET });
     }
 };
 UserModule = __decorate([

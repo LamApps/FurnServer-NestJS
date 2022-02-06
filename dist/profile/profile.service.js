@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -32,76 +23,66 @@ let ProfileService = class ProfileService {
         this.userRepository = userRepository;
         this.followsRepository = followsRepository;
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userRepository.find();
-        });
+    async findAll() {
+        return await this.userRepository.find();
     }
-    findOne(options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.userRepository.findOne(options);
-            delete user.id;
-            if (user)
-                delete user.password;
-            return { profile: user };
-        });
+    async findOne(options) {
+        const user = await this.userRepository.findOne(options);
+        delete user.id;
+        if (user)
+            delete user.password;
+        return { profile: user };
     }
-    findProfile(id, followingUsername) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const _profile = yield this.userRepository.findOne({ username: followingUsername });
-            if (!_profile)
-                return;
-            let profile = {
-                username: _profile.username,
-            };
-            const follows = yield this.followsRepository.findOne({ followerId: id, followingId: _profile.id });
-            if (id) {
-                profile.following = !!follows;
-            }
-            return { profile };
-        });
+    async findProfile(id, followingUsername) {
+        const _profile = await this.userRepository.findOne({ username: followingUsername });
+        if (!_profile)
+            return;
+        let profile = {
+            username: _profile.username,
+        };
+        const follows = await this.followsRepository.findOne({ followerId: id, followingId: _profile.id });
+        if (id) {
+            profile.following = !!follows;
+        }
+        return { profile };
     }
-    follow(followerEmail, username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!followerEmail || !username) {
-                throw new http_exception_1.HttpException('Follower email and username not provided.', common_1.HttpStatus.BAD_REQUEST);
-            }
-            const followingUser = yield this.userRepository.findOne({ username });
-            const followerUser = yield this.userRepository.findOne({ email: followerEmail });
-            if (followingUser.email === followerEmail) {
-                throw new http_exception_1.HttpException('FollowerEmail and FollowingId cannot be equal.', common_1.HttpStatus.BAD_REQUEST);
-            }
-            const _follows = yield this.followsRepository.findOne({ followerId: followerUser.id, followingId: followingUser.id });
-            if (!_follows) {
-                const follows = new follows_entity_1.FollowsEntity();
-                follows.followerId = followerUser.id;
-                follows.followingId = followingUser.id;
-                yield this.followsRepository.save(follows);
-            }
-            let profile = {
-                username: followingUser.username,
-                following: true
-            };
-            return { profile };
-        });
+    async follow(followerEmail, username) {
+        if (!followerEmail || !username) {
+            throw new http_exception_1.HttpException('Follower email and username not provided.', common_1.HttpStatus.BAD_REQUEST);
+        }
+        const followingUser = await this.userRepository.findOne({ username });
+        const followerUser = await this.userRepository.findOne({ email: followerEmail });
+        if (followingUser.email === followerEmail) {
+            throw new http_exception_1.HttpException('FollowerEmail and FollowingId cannot be equal.', common_1.HttpStatus.BAD_REQUEST);
+        }
+        const _follows = await this.followsRepository.findOne({ followerId: followerUser.id, followingId: followingUser.id });
+        if (!_follows) {
+            const follows = new follows_entity_1.FollowsEntity();
+            follows.followerId = followerUser.id;
+            follows.followingId = followingUser.id;
+            await this.followsRepository.save(follows);
+        }
+        let profile = {
+            username: followingUser.username,
+            following: true
+        };
+        return { profile };
     }
-    unFollow(followerId, username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!followerId || !username) {
-                throw new http_exception_1.HttpException('FollowerId and username not provided.', common_1.HttpStatus.BAD_REQUEST);
-            }
-            const followingUser = yield this.userRepository.findOne({ username });
-            if (followingUser.id === followerId) {
-                throw new http_exception_1.HttpException('FollowerId and FollowingId cannot be equal.', common_1.HttpStatus.BAD_REQUEST);
-            }
-            const followingId = followingUser.id;
-            yield this.followsRepository.delete({ followerId, followingId });
-            let profile = {
-                username: followingUser.username,
-                following: false
-            };
-            return { profile };
-        });
+    async unFollow(followerId, username) {
+        if (!followerId || !username) {
+            throw new http_exception_1.HttpException('FollowerId and username not provided.', common_1.HttpStatus.BAD_REQUEST);
+        }
+        const followingUser = await this.userRepository.findOne({ username });
+        if (followingUser.id === followerId) {
+            throw new http_exception_1.HttpException('FollowerId and FollowingId cannot be equal.', common_1.HttpStatus.BAD_REQUEST);
+        }
+        const followingId = followingUser.id;
+        await this.followsRepository.delete({ followerId, followingId });
+        let profile = {
+            username: followingUser.username,
+            following: false
+        };
+        return { profile };
     }
 };
 ProfileService = __decorate([

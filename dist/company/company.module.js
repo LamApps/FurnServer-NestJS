@@ -23,7 +23,7 @@ let CompanyModule = class CompanyModule {
     configure(consumer) {
         consumer
             .apply(auth_middleware_1.AuthMiddleware)
-            .forRoutes({ path: 'company', method: common_1.RequestMethod.GET }, { path: 'company/:id', method: common_1.RequestMethod.PUT }, { path: 'company', method: common_1.RequestMethod.POST }, { path: 'company/enable/:id', method: common_1.RequestMethod.POST }, { path: 'company/:id', method: common_1.RequestMethod.DELETE }, { path: 'company/:id', method: common_1.RequestMethod.GET });
+            .forRoutes({ path: 'company', method: common_1.RequestMethod.GET }, { path: 'company/:id', method: common_1.RequestMethod.PUT }, { path: 'company', method: common_1.RequestMethod.POST }, { path: 'company/enable/:id', method: common_1.RequestMethod.POST }, { path: 'company/permission/:id', method: common_1.RequestMethod.POST }, { path: 'company/:id', method: common_1.RequestMethod.DELETE }, { path: 'company/:id', method: common_1.RequestMethod.GET });
     }
 };
 CompanyModule = __decorate([

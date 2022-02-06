@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const adminuser_service_1 = require("./adminuser.service");
@@ -34,52 +25,37 @@ let AdminuserController = class AdminuserController {
     constructor(userService) {
         this.userService = userService;
     }
-    login(loginUserDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const _user = yield this.userService.findOne(loginUserDto);
-            if (!_user)
-                return new http_exception_1.HttpException('user not found or incorrect password', common_1.HttpStatus.UNAUTHORIZED);
-            if (!_user.active)
-                return new http_exception_1.HttpException('Inactivated user', common_1.HttpStatus.UNAUTHORIZED);
-            const token = yield this.userService.generateJWT(_user);
-            const user = Object.assign({ token }, _user);
-            return { status: common_1.HttpStatus.OK, user };
-        });
+    async login(loginUserDto) {
+        const _user = await this.userService.findOne(loginUserDto);
+        if (!_user)
+            return new http_exception_1.HttpException('User not found or incorrect password.', common_1.HttpStatus.UNAUTHORIZED);
+        if (!_user.active)
+            return new http_exception_1.HttpException('Inactivated user.', common_1.HttpStatus.UNAUTHORIZED);
+        const token = await this.userService.generateJWT(_user);
+        const updated = await this.userService.update_login(_user.id, token);
+        const user = Object.assign({ token }, updated.item);
+        return { status: common_1.HttpStatus.OK, user };
     }
-    register(userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.userService.create(userData);
-        });
+    async register(userData) {
+        return this.userService.create(userData);
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.findAll();
-        });
+    async getUsers() {
+        return await this.userService.findAll();
     }
-    find(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.find(+id);
-        });
+    async find(id) {
+        return await this.userService.find(+id);
     }
-    create(userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.userService.create(userData);
-        });
+    async create(userData) {
+        return this.userService.create(userData);
     }
-    update(id, userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.update(+id, userData);
-        });
+    async update(id, userData) {
+        return await this.userService.update(+id, userData);
     }
-    delete(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.remove(+id);
-        });
+    async delete(id) {
+        return await this.userService.remove(+id);
     }
-    uploadPhoto(photo) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return photo;
-        });
+    async uploadPhoto(photo) {
+        return photo;
     }
 };
 __decorate([
@@ -145,7 +121,7 @@ __decorate([
             }
         })
     })),
-    common_1.Post("aadminuser/uploadPhoto"),
+    common_1.Post("adminuser/uploadPhoto"),
     __param(0, common_1.UploadedFile()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

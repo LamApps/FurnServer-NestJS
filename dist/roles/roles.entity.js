@@ -18,15 +18,15 @@ __decorate([
     __metadata("design:type", Number)
 ], RolesEntity.prototype, "id", void 0);
 __decorate([
-    typeorm_1.Column(),
+    typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
 ], RolesEntity.prototype, "code", void 0);
 __decorate([
-    typeorm_1.Column(),
+    typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
 ], RolesEntity.prototype, "name", void 0);
 __decorate([
-    typeorm_1.Column(),
+    typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
 ], RolesEntity.prototype, "description", void 0);
 __decorate([

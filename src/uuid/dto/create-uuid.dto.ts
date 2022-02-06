@@ -2,6 +2,9 @@ import { IsNotEmpty } from "class-validator";
 
 export class CreateUuidDto {
     @IsNotEmpty()
+    readonly unique_id: string;
+
+    @IsNotEmpty()
     readonly uuid: string;
   
     readonly description: string;

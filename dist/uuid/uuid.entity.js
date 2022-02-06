@@ -21,8 +21,8 @@ __decorate([
     __metadata("design:type", Number)
 ], UUIDEntity.prototype, "id", void 0);
 __decorate([
-    typeorm_1.Column({ default: 0 }),
-    __metadata("design:type", Number)
+    typeorm_1.Column({ default: "" }),
+    __metadata("design:type", String)
 ], UUIDEntity.prototype, "unique_id", void 0);
 __decorate([
     typeorm_1.Column({ default: "" }),
@@ -33,8 +33,8 @@ __decorate([
     __metadata("design:type", String)
 ], UUIDEntity.prototype, "description", void 0);
 __decorate([
-    typeorm_1.Column(),
-    __metadata("design:type", Date)
+    typeorm_1.Column({ default: "" }),
+    __metadata("design:type", String)
 ], UUIDEntity.prototype, "last_date_verified", void 0);
 __decorate([
     typeorm_1.Column({ default: false }),

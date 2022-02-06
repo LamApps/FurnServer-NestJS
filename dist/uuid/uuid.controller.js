@@ -11,35 +11,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const uuid_service_1 = require("./uuid.service");
 const create_uuid_dto_1 = require("./dto/create-uuid.dto");
 const update_uuid_dto_1 = require("./dto/update-uuid.dto");
-const role_enum_1 = require("../enum/role.enum");
-const roles_decorator_1 = require("../user/roles.decorator");
 let UuidController = class UuidController {
     constructor(uuidService) {
         this.uuidService = uuidService;
     }
-    create(createUuidDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.uuidService.create(createUuidDto);
-        });
+    async create(createUuidDto) {
+        return this.uuidService.create(createUuidDto);
     }
-    findAll(company) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.uuidService.findAll(+company);
-        });
+    async findAll(company) {
+        return this.uuidService.findAll(+company);
+    }
+    async getLatestUniqueId() {
+        return this.uuidService.getLatestUniqueId();
     }
     findOne(id) {
         return this.uuidService.findOne(+id);
@@ -54,7 +42,6 @@ let UuidController = class UuidController {
 __decorate([
     common_1.Post(),
     common_1.UsePipes(new common_1.ValidationPipe()),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_uuid_dto_1.CreateUuidDto]),
@@ -62,15 +49,19 @@ __decorate([
 ], UuidController.prototype, "create", null);
 __decorate([
     common_1.Get('company/:company'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('company')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], UuidController.prototype, "findAll", null);
 __decorate([
+    common_1.Get('getUid'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UuidController.prototype, "getLatestUniqueId", null);
+__decorate([
     common_1.Get(':id'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -79,7 +70,6 @@ __decorate([
 __decorate([
     common_1.Put(':id'),
     common_1.UsePipes(new common_1.ValidationPipe()),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')), __param(1, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_uuid_dto_1.UpdateUuidDto]),
@@ -87,7 +77,6 @@ __decorate([
 ], UuidController.prototype, "update", null);
 __decorate([
     common_1.Delete(':id'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

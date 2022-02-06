@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -32,91 +23,110 @@ let UuidService = class UuidService {
         this.uuidRepository = uuidRepository;
         this.companyRepository = companyRepository;
     }
-    create(createUuidDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
-                .createQueryBuilder('uuid')
-                .where('uuid.uuid = :uuid', { uuid: createUuidDto.uuid });
-            const uuid = yield qb.getOne();
-            if (uuid) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'UUID must be unique.'
-                };
-            }
-            let newUuid = new uuid_entity_1.UUIDEntity();
-            newUuid.uuid = createUuidDto.uuid;
-            newUuid.description = createUuidDto.description;
-            newUuid.last_date_verified = createUuidDto.last_date_verified;
-            newUuid.version = createUuidDto.version;
-            newUuid.active = createUuidDto.active;
-            const errors = yield class_validator_1.validate(newUuid);
-            if (errors.length > 0) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'Input is not valid.'
-                };
-            }
-            else {
-                const savedUuid = yield this.uuidRepository.save(newUuid);
-                const company = yield this.companyRepository.findOne({ where: { id: createUuidDto.company }, relations: ['uuids'] });
-                company.uuids.push(savedUuid);
-                yield this.companyRepository.save(company);
-                return { status: common_1.HttpStatus.OK, item: savedUuid };
-            }
-        });
+    async create(createUuidDto) {
+        const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .where('uuid.uuid = :uuid', { uuid: createUuidDto.uuid });
+        const uuid = await qb.getOne();
+        if (uuid) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'UUID must be unique.'
+            };
+        }
+        const qb1 = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id });
+        const uuid1 = await qb1.getOne();
+        if (uuid1) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Unique ID must be unique.'
+            };
+        }
+        let newUuid = new uuid_entity_1.UUIDEntity();
+        newUuid.unique_id = createUuidDto.unique_id;
+        newUuid.uuid = createUuidDto.uuid;
+        newUuid.description = createUuidDto.description;
+        newUuid.last_date_verified = createUuidDto.last_date_verified;
+        newUuid.version = createUuidDto.version;
+        newUuid.active = createUuidDto.active;
+        const errors = await class_validator_1.validate(newUuid);
+        if (errors.length > 0) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Input is not valid.'
+            };
+        }
+        else {
+            const savedUuid = await this.uuidRepository.save(newUuid);
+            const company = await this.companyRepository.findOne({ where: { id: createUuidDto.company }, relations: ['uuids'] });
+            company.uuids.push(savedUuid);
+            await this.companyRepository.save(company);
+            return { status: common_1.HttpStatus.OK, item: savedUuid };
+        }
     }
-    findAll(company) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
-                .createQueryBuilder('uuid')
-                .leftJoinAndSelect('uuid.company', 'company')
-                .where('company.id = :id', { id: company });
-            const uuids = yield qb.getMany();
-            return { items: uuids, totalCount: uuids.length };
+    async getLatestUniqueId() {
+        let uuid = await this.uuidRepository.findOne({
+            order: { id: 'DESC' }
         });
+        return { id: uuid ? uuid.id : 0 };
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const uuid = yield this.uuidRepository.findOne({ id: id });
-            if (!uuid) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not uuid.'
-                };
-            }
-            return { item: uuid };
-        });
+    async findAll(company) {
+        const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .leftJoinAndSelect('uuid.company', 'company')
+            .where('company.id = :id', { id: company });
+        const uuids = await qb.getMany();
+        return { items: uuids, totalCount: uuids.length };
     }
-    update(id, updateUuidDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let uuid = yield this.uuidRepository.findOne(id);
-            if (!uuid) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not uuid.'
-                };
-            }
-            uuid.last_date_verified = updateUuidDto.last_date_verified;
-            uuid.description = updateUuidDto.description;
-            uuid.version = updateUuidDto.version;
-            uuid.active = updateUuidDto.active;
-            yield this.uuidRepository.update(id, uuid);
-            const updated = yield this.uuidRepository.findOne({ id: id });
-            return { item: updated };
-        });
+    async findOne(id) {
+        const uuid = await this.uuidRepository.findOne({ id: id });
+        if (!uuid) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not uuid.'
+            };
+        }
+        return { item: uuid };
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const uuid = yield this.uuidRepository.findOne({ id: id });
-            if (!uuid) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not uuid.'
-                };
-            }
-            return yield this.uuidRepository.delete({ id: id });
-        });
+    async update(id, updateUuidDto) {
+        const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .where('uuid.unique_id = :unique_id', { unique_id: updateUuidDto.unique_id });
+        const orig_uuid = await qb.getOne();
+        console.log(orig_uuid, id);
+        if (orig_uuid && orig_uuid.id != id) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Unique ID must be unique.'
+            };
+        }
+        let uuid = await this.uuidRepository.findOne(id);
+        if (!uuid) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not uuid.'
+            };
+        }
+        uuid.unique_id = updateUuidDto.unique_id;
+        uuid.last_date_verified = updateUuidDto.last_date_verified;
+        uuid.description = updateUuidDto.description;
+        uuid.version = updateUuidDto.version;
+        uuid.active = updateUuidDto.active;
+        await this.uuidRepository.update(id, uuid);
+        const updated = await this.uuidRepository.findOne({ id: id });
+        return { item: updated };
+    }
+    async remove(id) {
+        const uuid = await this.uuidRepository.findOne({ id: id });
+        if (!uuid) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not uuid.'
+            };
+        }
+        return await this.uuidRepository.delete({ id: id });
     }
 };
 UuidService = __decorate([

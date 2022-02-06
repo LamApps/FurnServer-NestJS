@@ -183,7 +183,7 @@ export class AdminuserService {
       id: user.id,
       username: user.username,
       email: user.email,
-      exp: new Date().getTime() / 1000 + 12 * 3600,
+      exp: new Date().getTime() / 1000 + 20 * 60,
       isAdmin: true,
     }, SECRET);
   };

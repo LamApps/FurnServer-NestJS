@@ -8,15 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const adminuser_service_1 = require("./adminuser.service");
@@ -24,11 +15,9 @@ let AuthMiddleware = class AuthMiddleware {
     constructor(userService) {
         this.userService = userService;
     }
-    use(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const authHeaders = req.headers.authorization;
-            next();
-        });
+    async use(req, res, next) {
+        const authHeaders = req.headers.authorization;
+        next();
     }
 };
 AuthMiddleware = __decorate([

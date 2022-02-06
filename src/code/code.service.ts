@@ -22,7 +22,6 @@ export class CodeService {
     code.content = createCodeDto.content;
     code.page = createCodeDto.page;
     code.active = createCodeDto.active;
-    if(createCodeDto.company>0) code.company = createCodeDto.company;
 
     const errors = await validate(code);
     if (errors.length > 0) {
@@ -34,9 +33,11 @@ export class CodeService {
 
       const savedCode = await this.codeRepository.save(code);
       
-      // const company = await this.companyRepository.findOne({ where: { id: createEmailDto.company }, relations: ['emails'] });
-      // company.emails.push(savedCode);
-      // await this.companyRepository.save(company);
+      if(createCodeDto.company>0) {
+        const company = await this.companyRepository.findOne({ where: { id: createCodeDto.company }, relations: ['codes'] });
+        company.codes.push(savedCode);
+        await this.companyRepository.save(company); 
+      }
       
       return { status: HttpStatus.OK, item: savedCode }
     }

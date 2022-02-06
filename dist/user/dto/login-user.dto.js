@@ -15,6 +15,10 @@ class LoginUserDto {
 __decorate([
     class_validator_1.IsNotEmpty(),
     __metadata("design:type", String)
+], LoginUserDto.prototype, "company", void 0);
+__decorate([
+    class_validator_1.IsNotEmpty(),
+    __metadata("design:type", String)
 ], LoginUserDto.prototype, "username", void 0);
 __decorate([
     class_validator_1.IsNotEmpty(),

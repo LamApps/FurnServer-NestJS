@@ -18,10 +18,6 @@ __decorate([
 ], CreateUserDto.prototype, "username", void 0);
 __decorate([
     class_validator_1.IsNotEmpty(),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "email", void 0);
-__decorate([
-    class_validator_1.IsNotEmpty(),
     __metadata("design:type", Number)
 ], CreateUserDto.prototype, "company", void 0);
 __decorate([

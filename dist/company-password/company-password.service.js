@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -34,88 +25,78 @@ let CompanyPasswordService = class CompanyPasswordService {
         this.passwordRepository = passwordRepository;
         this.companyRepository = companyRepository;
     }
-    create(createCompanyPasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let newCompanyPassword = new company_password_entity_1.CompanyPasswordEntity();
-            newCompanyPassword.pwd = createCompanyPasswordDto.pwd;
-            newCompanyPassword.description = createCompanyPasswordDto.description;
-            newCompanyPassword.has_threshold = createCompanyPasswordDto.has_threshold;
-            newCompanyPassword.threshold = createCompanyPasswordDto.threshold;
-            const errors = yield class_validator_1.validate(newCompanyPassword);
-            if (errors.length > 0) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'Input is not valid.'
-                };
-            }
-            else {
-                const savedCompanyPassword = yield this.companyPasswordRepository.save(newCompanyPassword);
-                const company = yield this.companyRepository.findOne({ where: { id: createCompanyPasswordDto.company }, relations: ['passwords'] });
-                company.passwords.push(savedCompanyPassword);
-                yield this.companyRepository.save(company);
-                const password = yield this.passwordRepository.findOne({ where: { id: createCompanyPasswordDto.password }, relations: ['passwords'] });
-                password.passwords.push(savedCompanyPassword);
-                yield this.passwordRepository.save(password);
-                return { item: savedCompanyPassword };
-            }
-        });
+    async create(createCompanyPasswordDto) {
+        let newCompanyPassword = new company_password_entity_1.CompanyPasswordEntity();
+        newCompanyPassword.pwd = createCompanyPasswordDto.pwd;
+        newCompanyPassword.description = createCompanyPasswordDto.description;
+        newCompanyPassword.has_threshold = createCompanyPasswordDto.has_threshold;
+        newCompanyPassword.threshold = createCompanyPasswordDto.threshold;
+        const errors = await class_validator_1.validate(newCompanyPassword);
+        if (errors.length > 0) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Input is not valid.'
+            };
+        }
+        else {
+            const savedCompanyPassword = await this.companyPasswordRepository.save(newCompanyPassword);
+            const company = await this.companyRepository.findOne({ where: { id: createCompanyPasswordDto.company }, relations: ['passwords'] });
+            company.passwords.push(savedCompanyPassword);
+            await this.companyRepository.save(company);
+            const password = await this.passwordRepository.findOne({ where: { id: createCompanyPasswordDto.password }, relations: ['passwords'] });
+            password.passwords.push(savedCompanyPassword);
+            await this.passwordRepository.save(password);
+            return { item: savedCompanyPassword };
+        }
     }
-    findAll(company) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(company_password_entity_1.CompanyPasswordEntity)
-                .createQueryBuilder('company_password')
-                .leftJoinAndSelect('company_password.company', 'company')
-                .leftJoinAndSelect('company_password.password', 'password')
-                .where('company.id = :id', { id: company });
-            const passwords = yield qb.getMany();
-            return { items: passwords, totalCount: passwords.length };
-        });
+    async findAll(company) {
+        const qb = await typeorm_2.getRepository(company_password_entity_1.CompanyPasswordEntity)
+            .createQueryBuilder('company_password')
+            .leftJoinAndSelect('company_password.company', 'company')
+            .leftJoinAndSelect('company_password.password', 'password')
+            .where('company.id = :id', { id: company });
+        const passwords = await qb.getMany();
+        return { items: passwords, totalCount: passwords.length };
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const qb = yield typeorm_2.getRepository(company_password_entity_1.CompanyPasswordEntity)
-                .createQueryBuilder('company_password')
-                .leftJoinAndSelect('company_password.company', 'company')
-                .leftJoinAndSelect('company_password.password', 'password');
-            const password = yield qb.where({ id: id }).getOne();
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            return { item: password };
-        });
+    async findOne(id) {
+        const qb = await typeorm_2.getRepository(company_password_entity_1.CompanyPasswordEntity)
+            .createQueryBuilder('company_password')
+            .leftJoinAndSelect('company_password.company', 'company')
+            .leftJoinAndSelect('company_password.password', 'password');
+        const password = await qb.where({ id: id }).getOne();
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        return { item: password };
     }
-    update(id, updateCompanyPasswordDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let password = yield this.companyPasswordRepository.findOne(id);
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            password.pwd = updateCompanyPasswordDto.pwd;
-            password.description = updateCompanyPasswordDto.description;
-            password.has_threshold = updateCompanyPasswordDto.has_threshold;
-            password.threshold = updateCompanyPasswordDto.threshold;
-            yield this.companyPasswordRepository.update(id, password);
-            const updated = yield this.companyPasswordRepository.findOne({ id: id });
-            return { item: updated };
-        });
+    async update(id, updateCompanyPasswordDto) {
+        let password = await this.companyPasswordRepository.findOne(id);
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        password.pwd = updateCompanyPasswordDto.pwd;
+        password.description = updateCompanyPasswordDto.description;
+        password.has_threshold = updateCompanyPasswordDto.has_threshold;
+        password.threshold = updateCompanyPasswordDto.threshold;
+        await this.companyPasswordRepository.update(id, password);
+        const updated = await this.companyPasswordRepository.findOne({ id: id });
+        return { item: updated };
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.companyPasswordRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not password.'
-                };
-            }
-            return yield this.companyPasswordRepository.delete({ id: id });
-        });
+    async remove(id) {
+        const password = await this.companyPasswordRepository.findOne({ id: id });
+        if (!password) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not password.'
+            };
+        }
+        return await this.companyPasswordRepository.delete({ id: id });
     }
 };
 CompanyPasswordService = __decorate([

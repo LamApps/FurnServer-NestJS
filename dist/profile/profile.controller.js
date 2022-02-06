@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const profile_service_1 = require("./profile.service");
@@ -29,20 +20,14 @@ let ProfileController = class ProfileController {
     constructor(profileService) {
         this.profileService = profileService;
     }
-    getProfile(userId, username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.profileService.findProfile(userId, username);
-        });
+    async getProfile(userId, username) {
+        return await this.profileService.findProfile(userId, username);
     }
-    follow(email, username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.profileService.follow(email, username);
-        });
+    async follow(email, username) {
+        return await this.profileService.follow(email, username);
     }
-    unFollow(userId, username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.profileService.unFollow(userId, username);
-        });
+    async unFollow(userId, username) {
+        return await this.profileService.unFollow(userId, username);
     }
 };
 __decorate([

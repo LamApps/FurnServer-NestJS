@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -32,72 +23,69 @@ let RolesService = class RolesService {
         this.rolesRepository = rolesRepository;
         this.userRepository = userRepository;
     }
-    create(createRolesDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { name } = createRolesDto;
-            const qb = yield typeorm_2.getRepository(roles_entity_1.RolesEntity)
-                .createQueryBuilder('roles')
-                .where('roles.name = :name', { name });
-            let newPassword = new roles_entity_1.RolesEntity();
-            newPassword.code = '';
-            newPassword.name = createRolesDto.name;
-            newPassword.description = '';
-            const errors = yield class_validator_1.validate(newPassword);
-            if (errors.length > 0) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: errors
-                };
-            }
-            else {
-                const savedPassword = yield this.rolesRepository.save(newPassword);
-                return { item: savedPassword };
-            }
-        });
+    async create(createRolesDto) {
+        const { name } = createRolesDto;
+        const qb = await typeorm_2.getRepository(roles_entity_1.RolesEntity)
+            .createQueryBuilder('roles')
+            .where('roles.name = :name', { name });
+        const role = await qb.getOne();
+        if (role) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'Role must be unique.'
+            };
+        }
+        let newRole = new roles_entity_1.RolesEntity();
+        newRole.code = '';
+        newRole.name = createRolesDto.name;
+        newRole.description = '';
+        const errors = await class_validator_1.validate(newRole);
+        if (errors.length > 0) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: errors
+            };
+        }
+        else {
+            const savedRole = await this.rolesRepository.save(newRole);
+            return { item: savedRole };
+        }
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const roles = yield this.rolesRepository.find();
-            return { items: roles, totalCount: roles.length };
-        });
+    async findAll() {
+        const roles = await this.rolesRepository.find();
+        return { items: roles, totalCount: roles.length };
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.rolesRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not Role.'
-                };
-            }
-            return { item: password };
-        });
+    async findOne(id) {
+        const role = await this.rolesRepository.findOne({ id: id });
+        if (!role) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not Role.'
+            };
+        }
+        return { item: role };
     }
-    update(id, updateRolesDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.rolesRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not Role.'
-                };
-            }
-            yield this.rolesRepository.update(id, updateRolesDto);
-            const updated = yield this.rolesRepository.findOne({ id: id });
-            return { item: updated };
-        });
+    async update(id, updateRolesDto) {
+        const role = await this.rolesRepository.findOne({ id: id });
+        if (!role) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not Role.'
+            };
+        }
+        await this.rolesRepository.update(id, updateRolesDto);
+        const updated = await this.rolesRepository.findOne({ id: id });
+        return { item: updated };
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const password = yield this.rolesRepository.findOne({ id: id });
-            if (!password) {
-                return {
-                    status: common_1.HttpStatus.BAD_REQUEST,
-                    message: 'There is not Role.'
-                };
-            }
-            return yield this.rolesRepository.delete({ id: id });
-        });
+    async remove(id) {
+        const role = await this.rolesRepository.findOne({ id: id });
+        if (!role) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'There is not Role.'
+            };
+        }
+        return await this.rolesRepository.delete({ id: id });
     }
 };
 RolesService = __decorate([

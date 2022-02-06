@@ -19,6 +19,7 @@ ormconfig.json
 src/config.ts
 
 dist
+dist/*
 
 # code testing coverage
 coverage

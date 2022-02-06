@@ -8,32 +8,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const class_validator_1 = require("class-validator");
 const argon2 = require("argon2");
 const roles_entity_1 = require("../roles/roles.entity");
 let AdminuserEntity = class AdminuserEntity {
-    hashPassword() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.password = yield argon2.hash(this.password);
-            this.created = new Date;
-        });
+    async hashPassword() {
+        this.password = await argon2.hash(this.password);
+        this.created = new Date;
     }
 };
 __decorate([
     typeorm_1.PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], AdminuserEntity.prototype, "id", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], AdminuserEntity.prototype, "token", void 0);
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
@@ -62,14 +55,14 @@ __decorate([
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
-], AdminuserEntity.prototype, "login", void 0);
+], AdminuserEntity.prototype, "position", void 0);
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
-], AdminuserEntity.prototype, "position", void 0);
+], AdminuserEntity.prototype, "mobile", void 0);
 __decorate([
-    typeorm_1.Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" }),
-    __metadata("design:type", Date)
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
 ], AdminuserEntity.prototype, "birthday", void 0);
 __decorate([
     typeorm_1.Column(),

@@ -8,15 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_exception_1 = require("@nestjs/common/exceptions/http.exception");
 const common_1 = require("@nestjs/common");
@@ -29,37 +20,51 @@ let AuthMiddleware = class AuthMiddleware {
         this.userService = userService;
         this.adminuserService = adminuserService;
     }
-    use(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const authHeaders = req.headers.authorization;
-            if (authHeaders && authHeaders.split(' ')[1]) {
-                const token = authHeaders.split(' ')[1];
-                const decoded = jwt.verify(token, config_1.SECRET);
-                var handled = false;
-                if (decoded.email.indexOf("|admin") >= 0) {
-                    if (!handled) {
-                        const user = yield this.adminuserService.findById(decoded.id);
-                        handled = true;
-                        req.user = user.user;
-                        next();
-                    }
+    async use(req, res, next) {
+        const authHeaders = req.headers.authorization;
+        if (authHeaders && authHeaders.split(' ')[1]) {
+            const token = authHeaders.split(' ')[1];
+            const decoded = jwt.verify(token, config_1.SECRET);
+            let handled = false;
+            if (decoded.isAdmin) {
+                const user = await this.adminuserService.find(decoded.id);
+                if (user && user.item.token == token) {
+                    handled = true;
+                    req.user = user.item;
+                    next();
                 }
                 else {
-                    if (!handled) {
-                        const user = yield this.userService.findById(decoded.id);
-                        handled = true;
-                        req.user = user.user;
-                        next();
+                    if (!user) {
+                        throw new http_exception_1.HttpException('User not found.', common_1.HttpStatus.UNAUTHORIZED);
                     }
-                }
-                if (!handled) {
-                    throw new http_exception_1.HttpException('User not found.', common_1.HttpStatus.UNAUTHORIZED);
+                    else {
+                        throw new http_exception_1.HttpException('Session expired', 905);
+                    }
                 }
             }
             else {
-                throw new http_exception_1.HttpException('Not authorized.', common_1.HttpStatus.UNAUTHORIZED);
+                const user = await this.userService.find(decoded.id);
+                if (user && user.item.token) {
+                    handled = true;
+                    req.user = user.item;
+                    next();
+                }
+                else {
+                    if (!user) {
+                        throw new http_exception_1.HttpException('User not found.', common_1.HttpStatus.UNAUTHORIZED);
+                    }
+                    else {
+                        throw new http_exception_1.HttpException('Session expired', 905);
+                    }
+                }
             }
-        });
+            if (!handled) {
+                throw new http_exception_1.HttpException('User not found.', common_1.HttpStatus.UNAUTHORIZED);
+            }
+        }
+        else {
+            throw new http_exception_1.HttpException('Not authorized.', common_1.HttpStatus.UNAUTHORIZED);
+        }
     }
 };
 AuthMiddleware = __decorate([

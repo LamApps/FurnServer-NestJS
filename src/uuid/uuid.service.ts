@@ -30,8 +30,21 @@ export class UuidService {
         message: 'UUID must be unique.'
       };
     }
+    const qb1 = await getRepository(UUIDEntity)
+      .createQueryBuilder('uuid')
+      .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id });
+
+    const uuid1 = await qb1.getOne();
+
+    if (uuid1) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Unique ID must be unique.'
+      };
+    }
 
     let newUuid = new UUIDEntity();
+    newUuid.unique_id = createUuidDto.unique_id;
     newUuid.uuid = createUuidDto.uuid;
     newUuid.description = createUuidDto.description;
     newUuid.last_date_verified = createUuidDto.last_date_verified;
@@ -56,6 +69,12 @@ export class UuidService {
     }
   }
 
+  async getLatestUniqueId() {
+    let uuid = await this.uuidRepository.findOne({
+        order: { id: 'DESC' }
+    });
+    return { id: uuid?uuid.id:0 }
+  }
   async findAll(company: number) {
     const qb = await getRepository(UUIDEntity)
       .createQueryBuilder('uuid')
@@ -78,6 +97,19 @@ export class UuidService {
   }
 
   async update(id: number, updateUuidDto: UpdateUuidDto) {
+    const qb = await getRepository(UUIDEntity)
+      .createQueryBuilder('uuid')
+      .where('uuid.unique_id = :unique_id', { unique_id: updateUuidDto.unique_id });
+
+    const orig_uuid = await qb.getOne();
+    console.log(orig_uuid, id)
+    if (orig_uuid && orig_uuid.id!=id) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Unique ID must be unique.'
+      };
+    }
+
     let uuid = await this.uuidRepository.findOne(id);
     if (!uuid) {
       return {
@@ -85,6 +117,7 @@ export class UuidService {
         message: 'There is not uuid.'
       }
     }
+    uuid.unique_id = updateUuidDto.unique_id;
     uuid.last_date_verified = updateUuidDto.last_date_verified;
     uuid.description = updateUuidDto.description;
     uuid.version = updateUuidDto.version;

@@ -11,15 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
@@ -27,8 +18,6 @@ const dto_1 = require("./dto");
 const http_exception_1 = require("@nestjs/common/exceptions/http.exception");
 const validation_pipe_1 = require("../shared/pipes/validation.pipe");
 const swagger_1 = require("@nestjs/swagger");
-const roles_decorator_1 = require("./roles.decorator");
-const role_enum_1 = require("../enum/role.enum");
 const platform_express_1 = require("@nestjs/platform-express");
 const path_1 = require("path");
 const multer_1 = require("multer");
@@ -36,52 +25,48 @@ let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
     }
-    login(loginUserDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const _user = yield this.userService.findOne(loginUserDto);
-            if (!_user)
-                return new http_exception_1.HttpException('user not found or incorrect password', common_1.HttpStatus.UNAUTHORIZED);
-            if (!_user.active)
-                return new http_exception_1.HttpException('Inactivated user', common_1.HttpStatus.UNAUTHORIZED);
-            const token = yield this.userService.generateJWT(_user);
-            const user = Object.assign({ token }, _user);
-            return { status: common_1.HttpStatus.OK, user };
-        });
+    async login(loginUserDto) {
+        let _user = await this.userService.findOne(loginUserDto);
+        if (!_user)
+            return new http_exception_1.HttpException('User not found or incorrect password.', common_1.HttpStatus.UNAUTHORIZED);
+        if (!_user.active)
+            return new http_exception_1.HttpException('Inactivated user.', common_1.HttpStatus.UNAUTHORIZED);
+        if (!_user.company.active)
+            return new http_exception_1.HttpException('Sorry this company is inactive.  Please contact Support.', common_1.HttpStatus.UNAUTHORIZED);
+        const token = await this.userService.generateJWT(_user);
+        _user = await this.userService.update_login(_user.id, loginUserDto, token);
+        const user = Object.assign({ token }, _user);
+        return { status: common_1.HttpStatus.OK, user };
     }
-    register(userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.userService.create(userData);
-        });
+    async register(userData) {
+        return await this.userService.create(userData);
     }
-    find(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.find(+id);
-        });
+    async find(id) {
+        return await this.userService.find(+id);
     }
-    create(userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.userService.create(userData);
-        });
+    async getLimitedUsers(id) {
+        return await this.userService.findAllLimited(+id);
     }
-    update(id, userData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.update(+id, userData);
-        });
+    async getUsers() {
+        return await this.userService.findAll();
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.findAll();
-        });
+    async getDatabase(params) {
+        return await this.userService.getDatabase(params.username, params.company);
     }
-    delete(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userService.remove(+id);
-        });
+    async create(userData) {
+        return this.userService.create(userData);
     }
-    uploadPhoto(photo) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return photo;
-        });
+    async update(id, userData) {
+        return await this.userService.update(+id, userData);
+    }
+    async delete(id) {
+        return await this.userService.remove(+id);
+    }
+    async permission(id, dto) {
+        return await this.userService.updatePermission(+id, +dto.role, dto.list);
+    }
+    async uploadPhoto(photo) {
+        return photo;
     }
 };
 __decorate([
@@ -108,8 +93,27 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "find", null);
 __decorate([
+    common_1.Get('user/company/:id'),
+    __param(0, common_1.Param('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getLimitedUsers", null);
+__decorate([
+    common_1.Get('user'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getUsers", null);
+__decorate([
+    common_1.Get('auth/database'),
+    __param(0, common_1.Query()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getDatabase", null);
+__decorate([
     common_1.Post('user'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [dto_1.CreateUserDto]),
@@ -123,20 +127,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "update", null);
 __decorate([
-    common_1.Get('user'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "getUsers", null);
-__decorate([
     common_1.Delete('user/:id'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "delete", null);
+__decorate([
+    common_1.Post('user/permission/:id'),
+    __param(0, common_1.Param('id')), __param(1, common_1.Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "permission", null);
 __decorate([
     swagger_1.ApiOperation({ summary: 'Add Photo' }),
     common_1.UseInterceptors(platform_express_1.FileInterceptor('photo', {

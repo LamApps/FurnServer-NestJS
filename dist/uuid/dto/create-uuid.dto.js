@@ -15,10 +15,14 @@ class CreateUuidDto {
 __decorate([
     class_validator_1.IsNotEmpty(),
     __metadata("design:type", String)
+], CreateUuidDto.prototype, "unique_id", void 0);
+__decorate([
+    class_validator_1.IsNotEmpty(),
+    __metadata("design:type", String)
 ], CreateUuidDto.prototype, "uuid", void 0);
 __decorate([
     class_validator_1.IsNotEmpty(),
-    __metadata("design:type", Date)
+    __metadata("design:type", String)
 ], CreateUuidDto.prototype, "last_date_verified", void 0);
 __decorate([
     class_validator_1.IsNotEmpty(),

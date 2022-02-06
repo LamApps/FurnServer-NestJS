@@ -11,50 +11,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const roles_service_1 = require("./roles.service");
 const create_roles_dto_1 = require("./dto/create-roles.dto");
 const update_roles_dto_1 = require("./dto/update-roles.dto");
-const role_enum_1 = require("../enum/role.enum");
-const roles_decorator_1 = require("../user/roles.decorator");
 let RolesController = class RolesController {
     constructor(rolesService) {
         this.rolesService = rolesService;
     }
-    create(createRolesDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.rolesService.create(createRolesDto);
-        });
+    async create(createRolesDto) {
+        return this.rolesService.create(createRolesDto);
     }
-    findAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.rolesService.findAll();
-        });
+    async findAll() {
+        return this.rolesService.findAll();
     }
-    findOne(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.rolesService.findOne(+id);
-        });
+    async findOne(id) {
+        return this.rolesService.findOne(+id);
     }
-    update(id, updateRolesDto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.rolesService.update(+id, updateRolesDto);
-        });
+    async update(id, updateRolesDto) {
+        return this.rolesService.update(+id, updateRolesDto);
     }
-    remove(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.rolesService.remove(+id);
-        });
+    async remove(id) {
+        return this.rolesService.remove(+id);
     }
 };
 __decorate([
@@ -73,7 +52,6 @@ __decorate([
 ], RolesController.prototype, "findAll", null);
 __decorate([
     common_1.Get(':id'),
-    roles_decorator_1.Roles(role_enum_1.Role.Admin, role_enum_1.Role.Developer),
     __param(0, common_1.Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

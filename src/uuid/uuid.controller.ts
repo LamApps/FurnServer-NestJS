@@ -22,6 +22,11 @@ export class UuidController {
     return this.uuidService.findAll(+company);
   }
 
+  @Get('getUid')
+  async getLatestUniqueId() {
+    return this.uuidService.getLatestUniqueId();
+  }
+
   @Get(':id')
   // @Roles(Role.Admin, Role.Developer)
   findOne(@Param('id') id: string) {

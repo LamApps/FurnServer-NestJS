@@ -9,8 +9,8 @@ export class UUIDEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({default: 0})
-  unique_id: number;
+  @Column({default: ""})
+  unique_id: string;
 
   @Column({default: ""})
   uuid: string;

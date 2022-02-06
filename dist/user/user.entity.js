@@ -8,27 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
-const class_validator_1 = require("class-validator");
 const argon2 = require("argon2");
-const role_enum_1 = require("../enum/role.enum");
 const company_entity_1 = require("../company/company.entity");
+const user_menu_entity_1 = require("../user-menu/user-menu.entity");
+const company_role_entity_1 = require("../company-role/company-role.entity");
 let UserEntity = class UserEntity {
-    hashPassword() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.password = yield argon2.hash(this.password);
-            this.created = new Date;
-        });
+    async hashPassword() {
+        this.password = await argon2.hash(this.password);
+        this.created = new Date;
     }
 };
 __decorate([
@@ -38,14 +27,25 @@ __decorate([
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
+], UserEntity.prototype, "token", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "database", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "default_database", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
 ], UserEntity.prototype, "ip_address", void 0);
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], UserEntity.prototype, "username", void 0);
 __decorate([
-    typeorm_1.Column(),
-    class_validator_1.IsEmail(),
+    typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
 ], UserEntity.prototype, "email", void 0);
 __decorate([
@@ -63,26 +63,46 @@ __decorate([
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
-], UserEntity.prototype, "login", void 0);
+], UserEntity.prototype, "position", void 0);
 __decorate([
     typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
-], UserEntity.prototype, "position", void 0);
+], UserEntity.prototype, "mobile", void 0);
 __decorate([
-    typeorm_1.Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" }),
-    __metadata("design:type", Date)
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
 ], UserEntity.prototype, "birthday", void 0);
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], UserEntity.prototype, "password", void 0);
 __decorate([
-    typeorm_1.Column({
-        type: 'enum',
-        enum: role_enum_1.Role,
-        default: role_enum_1.Role.User,
-    }),
+    typeorm_1.Column({ default: '' }),
     __metadata("design:type", String)
+], UserEntity.prototype, "browser", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "operating_system", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "last_login_date", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "last_login_time", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "last_login_database", void 0);
+__decorate([
+    typeorm_1.Column({ type: Number, default: 0 }),
+    __metadata("design:type", Number)
+], UserEntity.prototype, "timeout", void 0);
+__decorate([
+    typeorm_1.ManyToOne(type => company_role_entity_1.CompanyRoleEntity, role => role.users),
+    __metadata("design:type", company_role_entity_1.CompanyRoleEntity)
 ], UserEntity.prototype, "role", void 0);
 __decorate([
     typeorm_1.Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" }),
@@ -102,6 +122,15 @@ __decorate([
     typeorm_1.ManyToOne(type => company_entity_1.CompanyEntity, company => company.users),
     __metadata("design:type", company_entity_1.CompanyEntity)
 ], UserEntity.prototype, "company", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => user_menu_entity_1.UserMenuEntity, menu => menu.user),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "menus", void 0);
+__decorate([
+    typeorm_1.Column({ default: false }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "deleted", void 0);
 UserEntity = __decorate([
     typeorm_1.Entity('nest_user')
 ], UserEntity);

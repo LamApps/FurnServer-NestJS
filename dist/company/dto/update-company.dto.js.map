@@ -1,1 +1,1 @@
-{"version":3,"file":"update-company.dto.js","sourceRoot":"","sources":["../../../src/company/dto/update-company.dto.ts"],"names":[],"mappings":";;AAAA,uDAAmD;AAEnD,6DAAwD;AAExD,MAAa,gBAAiB,SAAQ,0BAAW,CAAC,qCAAgB,CAAC;CAAG;AAAtE,4CAAsE"}
+{"version":3,"file":"update-company.dto.js","sourceRoot":"","sources":["../../../src/company/dto/update-company.dto.ts"],"names":[],"mappings":";;AAGA,MAAa,gBAAgB;CAAG;AAAhC,4CAAgC"}
