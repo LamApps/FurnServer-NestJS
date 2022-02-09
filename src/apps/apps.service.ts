@@ -17,23 +17,22 @@ export class AppsService {
   ) {}
   
   async create(createAppsDto: CreateAppsDto) {
-    const { type } = createAppsDto;
+    const { app_id } = createAppsDto;
     const qb = await getRepository(AppsEntity)
       .createQueryBuilder('apps')
       .leftJoinAndSelect('apps.companies', 'companies')
-      .where('apps.type = :type', { type });
+      .where('apps.app_id = :app_id', { app_id });
 
     const apps = await qb.getOne();
 
     if (apps) {
       return {
         status: HttpStatus.BAD_REQUEST,
-        message: 'App Type must be unique.'
+        message: 'App ID must be unique.'
       };
     }
 
     let newApps = new AppsEntity();
-    newApps.type = createAppsDto.type;
     newApps.app_id = createAppsDto.app_id;
     newApps.expire_date = createAppsDto.expire_date;
     newApps.first_time_status = createAppsDto.first_time_status;
@@ -91,7 +90,23 @@ export class AppsService {
         message: 'There is not apps.'
       }
     }
-    apps.type = updateAppsDto.type;
+    const { app_id } = updateAppsDto;
+
+    const qb = await getRepository(AppsEntity)
+      .createQueryBuilder('apps')
+      .leftJoinAndSelect('apps.companies', 'companies')
+      .where('apps.app_id = :app_id', { app_id })
+      .andWhere('apps.id != :id', { id });
+
+    const apps1 = await qb.getOne();
+
+    if (apps1) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'App ID must be unique.'
+      };
+    }
+
     apps.app_id = updateAppsDto.app_id;
     apps.expire_date = updateAppsDto.expire_date;
     apps.first_time_status = updateAppsDto.first_time_status;

@@ -38,8 +38,10 @@ import { CodeModule } from './code/code.module';
       host: "localhost",
       port: 3306,
       username: "root",
+      // password: "Spurlock26!",
       password: "",
       database: "furnserve",
+      // database: "invoice",
       // entities: ["src/**/**.entity{.ts,.js}"],
       entities: getMetadataArgsStorage().tables.map(tbl => tbl.target),
       synchronize: true

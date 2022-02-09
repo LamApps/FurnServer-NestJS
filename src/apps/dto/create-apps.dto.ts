@@ -1,9 +1,6 @@
 import { IsNotEmpty } from "class-validator/decorator/decorators";
 
 export class CreateAppsDto {
-
-    @IsNotEmpty()
-    readonly type: string;
 	
     @IsNotEmpty()
     readonly app_id: string;

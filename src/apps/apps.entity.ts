@@ -6,9 +6,6 @@ export class AppsEntity {
 
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  type: string; 
  
   @Column()
   app_id: string;   

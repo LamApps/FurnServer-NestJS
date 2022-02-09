@@ -17,6 +17,11 @@ export class CodeController {
     return this.codeService.findAll(company);
   }
 
+  @Get('active')
+  findActiveList() {
+    return this.codeService.findActiveList();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.codeService.findOne(+id);

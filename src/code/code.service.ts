@@ -49,9 +49,16 @@ export class CodeService {
     .leftJoinAndSelect('code.company', 'company');
     if(company>0){
       qb = qb.where('company.id = :id', {id: company});
+    }else if(company==-1) {
+      qb = qb.where('company.id = :id', {id: null});
     }
 
     const codes = await qb.getMany();
+    return { items: codes, totalCount: codes.length }
+  }
+
+  async findActiveList() {
+    const codes = await this.codeRepository.find({ where: { active: 1 }, relations: ['company'] });
     return { items: codes, totalCount: codes.length }
   }
 

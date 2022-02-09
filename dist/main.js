@@ -1468,10 +1468,6 @@ __decorate([
 __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
-], AppsEntity.prototype, "type", void 0);
-__decorate([
-    typeorm_1.Column(),
-    __metadata("design:type", String)
 ], AppsEntity.prototype, "app_id", void 0);
 __decorate([
     typeorm_1.Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" }),
@@ -2383,7 +2379,7 @@ let AdminuserService = class AdminuserService {
             id: user.id,
             username: user.username,
             email: user.email,
-            exp: new Date().getTime() / 1000 + 20 * 60,
+            exp: new Date().getTime() / 1000 + 12 * 3600,
             isAdmin: true,
         }, config_1.SECRET);
     }
@@ -5037,20 +5033,19 @@ let AppsService = class AppsService {
         this.companyRepository = companyRepository;
     }
     async create(createAppsDto) {
-        const { type } = createAppsDto;
+        const { app_id } = createAppsDto;
         const qb = await typeorm_2.getRepository(apps_entity_1.AppsEntity)
             .createQueryBuilder('apps')
             .leftJoinAndSelect('apps.companies', 'companies')
-            .where('apps.type = :type', { type });
+            .where('apps.app_id = :app_id', { app_id });
         const apps = await qb.getOne();
         if (apps) {
             return {
                 status: common_1.HttpStatus.BAD_REQUEST,
-                message: 'App Type must be unique.'
+                message: 'App ID must be unique.'
             };
         }
         let newApps = new apps_entity_1.AppsEntity();
-        newApps.type = createAppsDto.type;
         newApps.app_id = createAppsDto.app_id;
         newApps.expire_date = createAppsDto.expire_date;
         newApps.first_time_status = createAppsDto.first_time_status;
@@ -5099,7 +5094,19 @@ let AppsService = class AppsService {
                 message: 'There is not apps.'
             };
         }
-        apps.type = updateAppsDto.type;
+        const { app_id } = updateAppsDto;
+        const qb = await typeorm_2.getRepository(apps_entity_1.AppsEntity)
+            .createQueryBuilder('apps')
+            .leftJoinAndSelect('apps.companies', 'companies')
+            .where('apps.app_id = :app_id', { app_id })
+            .andWhere('apps.id != :id', { id });
+        const apps1 = await qb.getOne();
+        if (apps1) {
+            return {
+                status: common_1.HttpStatus.BAD_REQUEST,
+                message: 'App ID must be unique.'
+            };
+        }
         apps.app_id = updateAppsDto.app_id;
         apps.expire_date = updateAppsDto.expire_date;
         apps.first_time_status = updateAppsDto.first_time_status;
@@ -5234,10 +5241,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const decorators_1 = __webpack_require__(86);
 class CreateAppsDto {
 }
-__decorate([
-    decorators_1.IsNotEmpty(),
-    __metadata("design:type", String)
-], CreateAppsDto.prototype, "type", void 0);
 __decorate([
     decorators_1.IsNotEmpty(),
     __metadata("design:type", String)
@@ -8338,7 +8341,14 @@ let CodeService = class CodeService {
         if (company > 0) {
             qb = qb.where('company.id = :id', { id: company });
         }
+        else if (company == -1) {
+            qb = qb.where('company.id = :id', { id: null });
+        }
         const codes = await qb.getMany();
+        return { items: codes, totalCount: codes.length };
+    }
+    async findActiveList() {
+        const codes = await this.codeRepository.find({ where: { active: 1 }, relations: ['company'] });
         return { items: codes, totalCount: codes.length };
     }
     async findOne(id) {
@@ -8420,6 +8430,9 @@ let CodeController = class CodeController {
     findAll(company) {
         return this.codeService.findAll(company);
     }
+    findActiveList() {
+        return this.codeService.findActiveList();
+    }
     findOne(id) {
         return this.codeService.findOne(+id);
     }
@@ -8444,6 +8457,12 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], CodeController.prototype, "findAll", null);
+__decorate([
+    common_1.Get('active'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], CodeController.prototype, "findActiveList", null);
 __decorate([
     common_1.Get(':id'),
     __param(0, common_1.Param('id')),
@@ -8594,7 +8613,7 @@ exports.UpdateCodeDto = UpdateCodeDto;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("7c5e6e448421927c6590")
+/******/ 		__webpack_require__.h = () => ("5a15edc4048ed7382b5f")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
