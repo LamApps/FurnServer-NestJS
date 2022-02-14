@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ApplicationModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const user_module_1 = require("./user/user.module");
@@ -40,6 +41,7 @@ const user_menu_module_1 = require("./user-menu/user-menu.module");
 const company_role_module_1 = require("./company-role/company-role.module");
 const utils_module_1 = require("./utils/utils.module");
 const code_module_1 = require("./code/code.module");
+const chat_module_1 = require("./chat/chat.module");
 let ApplicationModule = class ApplicationModule {
     constructor(connection) {
         this.connection = connection;
@@ -94,7 +96,8 @@ ApplicationModule = __decorate([
             user_menu_module_1.UserMenuModule,
             company_role_module_1.CompanyRoleModule,
             utils_module_1.UtilsModule,
-            code_module_1.CodeModule
+            code_module_1.CodeModule,
+            chat_module_1.ChatModule
         ],
         controllers: [
             app_controller_1.AppController

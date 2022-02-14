@@ -1,1 +1,1 @@
-{"version":3,"file":"update-device.dto.js","sourceRoot":"","sources":["../../../src/device/dto/update-device.dto.ts"],"names":[],"mappings":";;;;;;;;;;;AAAA,uDAAmD;AACnD,qEAAkE;AAClE,2DAAsD;AAEtD,MAAa,eAAgB,SAAQ,0BAAW,CAAC,mCAAe,CAAC;CAGhE;AADG;IADC,uBAAU,EAAE;;2CACO;AAFxB,0CAGC"}
+{"version":3,"file":"update-device.dto.js","sourceRoot":"","sources":["../../../src/device/dto/update-device.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,uDAAmD;AACnD,qEAAkE;AAClE,2DAAsD;AAEtD,MAAa,eAAgB,SAAQ,0BAAW,CAAC,mCAAe,CAAC;CAGhE;AADG;IADC,uBAAU,EAAE;;2CACO;AAFxB,0CAGC"}

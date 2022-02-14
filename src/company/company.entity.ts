@@ -8,6 +8,7 @@ import { UUIDEntity } from '../uuid/uuid.entity';
 import { CompanyMenuEntity } from '../company-menu/company-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { CodeEntity } from '../code/entities/code.entity';
+import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 export class Company {}
 
 @Entity('nest_company')
@@ -78,4 +79,9 @@ export class CompanyEntity {
   @OneToMany(type => CodeEntity, code => code.company)
   @JoinColumn()
   codes: CodeEntity[];
+
+  @OneToMany(type => RoomsEntity, rooms => rooms.company)
+  @JoinColumn()
+  rooms: RoomsEntity[];
+
 }

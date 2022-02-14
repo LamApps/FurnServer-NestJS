@@ -7,6 +7,7 @@ import { CompanyEntity } from '../company/company.entity';
 import { AppsEntity } from '../apps/apps.entity';
 import { UserMenuEntity } from '../user-menu/user-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
+import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 
 @Entity('nest_user')
 export class UserEntity {
@@ -91,6 +92,10 @@ export class UserEntity {
   @OneToMany(type => UserMenuEntity, menu=>menu.user)
   @JoinColumn()
   menus: UserMenuEntity[];
+
+  @OneToMany(type => RoomsEntity, room=>room.user)
+  @JoinColumn()
+  rooms: RoomsEntity[];
 
   @Column({ default: false })
   deleted: boolean;

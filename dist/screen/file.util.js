@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.editFileName = exports.imageFileFilter = void 0;
 const path_1 = require("path");
 exports.imageFileFilter = (req, file, callback) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {

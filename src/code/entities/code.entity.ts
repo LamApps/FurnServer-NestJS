@@ -1,8 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { CompanyEntity } from '../../company/company.entity';
 
-export class Code {}
-
 @Entity('nest_code')
 export class CodeEntity {
   @PrimaryGeneratedColumn()

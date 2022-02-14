@@ -6,6 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ApiModule = void 0;
 const common_1 = require("@nestjs/common");
 const api_service_1 = require("./api.service");
 const api_controller_1 = require("./api.controller");

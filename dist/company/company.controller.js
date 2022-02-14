@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CompanyController = void 0;
 const common_1 = require("@nestjs/common");
 const role_enum_1 = require("../enum/role.enum");
 const roles_decorator_1 = require("../user/roles.decorator");

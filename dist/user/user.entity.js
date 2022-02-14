@@ -9,11 +9,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 const argon2 = require("argon2");
 const company_entity_1 = require("../company/company.entity");
 const user_menu_entity_1 = require("../user-menu/user-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
+const room_entity_1 = require("../chat/rooms/entities/room.entity");
 let UserEntity = class UserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -127,6 +129,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "menus", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_entity_1.RoomsEntity, room => room.user),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "rooms", void 0);
 __decorate([
     typeorm_1.Column({ default: false }),
     __metadata("design:type", Boolean)

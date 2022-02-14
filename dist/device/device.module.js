@@ -6,6 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DeviceModule = void 0;
 const common_1 = require("@nestjs/common");
 const device_service_1 = require("./device.service");
 const device_controller_1 = require("./device.controller");

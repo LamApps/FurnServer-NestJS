@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UuidController = void 0;
 const common_1 = require("@nestjs/common");
 const uuid_service_1 = require("./uuid.service");
 const create_uuid_dto_1 = require("./dto/create-uuid.dto");

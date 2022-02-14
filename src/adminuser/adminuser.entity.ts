@@ -4,6 +4,7 @@ import * as argon2 from 'argon2';
 import { DeviceEntity } from '../device/device.entity';
 import { Role } from '../enum/role.enum';
 import { RolesEntity } from '../roles/roles.entity';
+import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 
 @Entity('admin_user')
 export class AdminuserEntity {
@@ -56,6 +57,11 @@ export class AdminuserEntity {
 
   @ManyToOne(type => RolesEntity, roles => roles.adminusers)
   roles: RolesEntity;
+
+  
+  @OneToMany(type => RoomsEntity, room=>room.adminuser)
+  @JoinColumn()
+  rooms: RoomsEntity[];
 
   @BeforeInsert()
   async hashPassword() {

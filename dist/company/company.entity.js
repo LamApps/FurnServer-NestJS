@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CompanyEntity = exports.Company = void 0;
 const typeorm_1 = require("typeorm");
 const company_password_entity_1 = require("../company-password/company-password.entity");
 const email_entity_1 = require("../email/email.entity");
@@ -19,6 +20,7 @@ const uuid_entity_1 = require("../uuid/uuid.entity");
 const company_menu_entity_1 = require("../company-menu/company-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const code_entity_1 = require("../code/entities/code.entity");
+const room_entity_1 = require("../chat/rooms/entities/room.entity");
 class Company {
 }
 exports.Company = Company;
@@ -109,6 +111,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], CompanyEntity.prototype, "codes", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_entity_1.RoomsEntity, rooms => rooms.company),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], CompanyEntity.prototype, "rooms", void 0);
 CompanyEntity = __decorate([
     typeorm_1.Entity('nest_company')
 ], CompanyEntity);

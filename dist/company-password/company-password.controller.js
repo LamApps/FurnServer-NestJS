@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CompanyPasswordController = void 0;
 const common_1 = require("@nestjs/common");
 const company_password_service_1 = require("./company-password.service");
 const create_company_password_dto_1 = require("./dto/create-company-password.dto");
