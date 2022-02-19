@@ -97,7 +97,7 @@ ApplicationModule = __decorate([
             company_role_module_1.CompanyRoleModule,
             utils_module_1.UtilsModule,
             code_module_1.CodeModule,
-            chat_module_1.ChatModule
+            chat_module_1.ChatModule,
         ],
         controllers: [
             app_controller_1.AppController

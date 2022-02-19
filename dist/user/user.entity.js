@@ -16,6 +16,8 @@ const company_entity_1 = require("../company/company.entity");
 const user_menu_entity_1 = require("../user-menu/user-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
+const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
+const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
 let UserEntity = class UserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -134,6 +136,26 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "rooms", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_log_entity_1.ChatLogEntity, chat_log => chat_log.sender),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "chat_logs", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_log_entity_1.ChatLogEntity, chat_log => chat_log.recipient),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "chat_logs_rec", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.owner),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "chat_contacts", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.user),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "contact_users", void 0);
 __decorate([
     typeorm_1.Column({ default: false }),
     __metadata("design:type", Boolean)

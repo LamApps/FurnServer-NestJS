@@ -7,9 +7,12 @@ import {
   OnGatewayDisconnect,
   MessageBody,
   ConnectedSocket,
+
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-// import { RoomsService } from './rooms/rooms.service';
+import * as socketioJwt from 'socketio-jwt';
+import { SECRET } from 'src/config';
+import { PrivateService } from './private/private.service';
 
 @WebSocketGateway({
   cors: {
@@ -19,15 +22,17 @@ import { Socket, Server } from 'socket.io';
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
-    // private roomsService: RoomsService,
+    private privateService: PrivateService,
   ){
 
   }
   @WebSocketServer() server: Server;
 
-  @SubscribeMessage('chat')
-  onChat(client: Socket, payload: string): void {
-    client.broadcast.emit('chat', payload);
+  OnGatewayInit(): void {
+    this.server.use(socketioJwt.authorize({
+      secret: SECRET,
+      handshake: true
+    }));
   }
 
   @SubscribeMessage('getRoomInfo')
@@ -48,7 +53,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ): Promise<any> {
     const room = 'room_' + data.roomId;
     client.leave(room);
-    client.data = {room: room, name: data.fullName, company: data.company, avatar: data.avatar};
+    client.data = client.data.uid?{...client.data, room: room}:{name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId};
     client.join(room);
     const clientList = await this.server.in(room).fetchSockets();
     const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
@@ -75,19 +80,99 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
     client.to(room).emit('usersRoom', userList);
   }
-  afterInit(server: Server) {
+
+  @SubscribeMessage('getConnectedUsers')
+  async onGetConnectedUsers(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const clientList = await this.server.of('/').fetchSockets();
+    const userList = {};
+    clientList.map(clientSocket=>{
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+    });
+    return { event: 'userList', data: userList };
+  }
+
+  @SubscribeMessage('privateMessage')
+  async onPrivateMessage(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    this.privateService.saveChatLog({
+      userId: client.data.userId,
+      company: client.data.company
+    }, data.receipent, data.message);
+    if(data.receipent.socketId){
+      this.server.of('/').to(data.receipent.socketId).emit('privateMessage', {sender: {...client.data}, message: data.message});
+    }
+  }
+
+  //login handler
+  @SubscribeMessage('userLogin')
+  async onUserLogin(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    console.log('userLogin');
+    client.data = {name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId};
+    const clientList = await this.server.of('/').fetchSockets();
+    const userList = {};
+    clientList.map(clientSocket=>{
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+    });
+    this.server.of('/').emit('userList', userList);
+  }
+
+  //logout handler
+  @SubscribeMessage('userLogout')
+  async onUserLogout(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    client.disconnect(true);
+    const clientList = await this.server.of('/').fetchSockets();
+    const userList = {};
+    clientList.map(clientSocket=>{
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+    });
+    this.server.of('/').emit('userList', userList);
+  }
+
+  afterInit(server: any) {
+      
+  }
+
+  async handleConnection(client: Socket, ...args: any[]) {
+    const query = client.handshake.query;
+    client.data = {name: query.fullName, company: query.company, avatar: query.avatar, userId: query.userId};
+
+    const clientList = await this.server.of('/').fetchSockets();
+    const userList = {};
+    clientList.map(clientSocket=>{
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+    });
+    this.server.of('/').emit('userList', userList);
+
+    // const clientList = await this.server.of('/').fetchSockets();
+    // const userList = clientList.map(clientSocket=>({id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
+    // this.server.of('/').emit('userList', userList);
   }
 
   async handleDisconnect(client: Socket) {
     //leave the room
+    console.log('disconnect');
     const userRoom = client.data.room;
-    const clientList = await this.server.in(userRoom).fetchSockets();
-    const userList = clientList.map(clientSocket=>clientSocket.data.name);
-    client.in(userRoom).emit('usersRoom', userList);
-  }
-
-  async handleConnection(client: Socket, ...args: any[]) {
-    // const clientList = this.server.of('/').adapter.rooms;
-    // console.log(clientList);
+    if(userRoom){
+      const clientList = await this.server.in(userRoom).fetchSockets();
+      const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
+      client.in(userRoom).emit('usersRoom', userList);
+    }
+    const clientList = await this.server.of('/').fetchSockets();
+    const userList = {};
+    clientList.map(clientSocket=>{
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+    });
+    this.server.of('/').emit('userList', userList);
   }
 }

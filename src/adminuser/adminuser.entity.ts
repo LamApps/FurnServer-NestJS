@@ -5,6 +5,8 @@ import { DeviceEntity } from '../device/device.entity';
 import { Role } from '../enum/role.enum';
 import { RolesEntity } from '../roles/roles.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
+import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
+import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
 
 @Entity('admin_user')
 export class AdminuserEntity {
@@ -62,6 +64,22 @@ export class AdminuserEntity {
   @OneToMany(type => RoomsEntity, room=>room.adminuser)
   @JoinColumn()
   rooms: RoomsEntity[];
+
+  @OneToMany(type => ChatLogEntity, chat_log=>chat_log.sender_admin)
+  @JoinColumn()
+  chat_logs: ChatLogEntity[];
+
+  @OneToMany(type => ChatLogEntity, chat_log=>chat_log.recipient_admin)
+  @JoinColumn()
+  chat_logs_rec: ChatLogEntity[];
+
+  @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.owner_admin)
+  @JoinColumn()
+  chat_contacts: ChatContactEntity[];
+
+  @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.admin_user)
+  @JoinColumn()
+  contact_users: ChatContactEntity[];
 
   @BeforeInsert()
   async hashPassword() {

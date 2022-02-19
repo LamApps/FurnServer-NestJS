@@ -14,6 +14,9 @@ const typeorm_1 = require("typeorm");
 const class_validator_1 = require("class-validator");
 const argon2 = require("argon2");
 const roles_entity_1 = require("../roles/roles.entity");
+const room_entity_1 = require("../chat/rooms/entities/room.entity");
+const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
+const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
 let AdminuserEntity = class AdminuserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -85,6 +88,31 @@ __decorate([
     typeorm_1.ManyToOne(type => roles_entity_1.RolesEntity, roles => roles.adminusers),
     __metadata("design:type", roles_entity_1.RolesEntity)
 ], AdminuserEntity.prototype, "roles", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_entity_1.RoomsEntity, room => room.adminuser),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "rooms", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_log_entity_1.ChatLogEntity, chat_log => chat_log.sender_admin),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "chat_logs", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_log_entity_1.ChatLogEntity, chat_log => chat_log.recipient_admin),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "chat_logs_rec", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.owner_admin),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "chat_contacts", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.admin_user),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "contact_users", void 0);
 __decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),

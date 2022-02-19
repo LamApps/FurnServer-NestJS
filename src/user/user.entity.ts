@@ -8,6 +8,8 @@ import { AppsEntity } from '../apps/apps.entity';
 import { UserMenuEntity } from '../user-menu/user-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
+import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
+import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
 
 @Entity('nest_user')
 export class UserEntity {
@@ -96,6 +98,22 @@ export class UserEntity {
   @OneToMany(type => RoomsEntity, room=>room.user)
   @JoinColumn()
   rooms: RoomsEntity[];
+
+  @OneToMany(type => ChatLogEntity, chat_log=>chat_log.sender)
+  @JoinColumn()
+  chat_logs: ChatLogEntity[];
+
+  @OneToMany(type => ChatLogEntity, chat_log=>chat_log.recipient)
+  @JoinColumn()
+  chat_logs_rec: ChatLogEntity[];
+
+  @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.owner)
+  @JoinColumn()
+  chat_contacts: ChatContactEntity[];
+
+  @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.user)
+  @JoinColumn()
+  contact_users: ChatContactEntity[];
 
   @Column({ default: false })
   deleted: boolean;
