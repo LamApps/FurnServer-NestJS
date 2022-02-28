@@ -18,6 +18,7 @@ const company_role_entity_1 = require("../company-role/company-role.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
 const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
 const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
+const room_banned_users_1 = require("../chat/rooms/entities/room_banned_users");
 let UserEntity = class UserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -117,6 +118,18 @@ __decorate([
     __metadata("design:type", Boolean)
 ], UserEntity.prototype, "active", void 0);
 __decorate([
+    typeorm_1.Column({ default: true }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "chat_alert", void 0);
+__decorate([
+    typeorm_1.Column({ default: true }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "sound", void 0);
+__decorate([
+    typeorm_1.Column({ default: 5 }),
+    __metadata("design:type", Number)
+], UserEntity.prototype, "alert_fadetime", void 0);
+__decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -156,6 +169,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "contact_users", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_banned_users_1.RoomBannedUsersEntity, room_banned => room_banned.user),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "banned_users", void 0);
 __decorate([
     typeorm_1.Column({ default: false }),
     __metadata("design:type", Boolean)

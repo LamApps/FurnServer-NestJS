@@ -113,7 +113,7 @@ __decorate([
     swagger_1.ApiOperation({ summary: 'Add Photo' }),
     common_1.UseInterceptors(platform_express_1.FileInterceptor('photo', {
         storage: multer_1.diskStorage({
-            destination: './uploads',
+            destination: '../uploads',
             filename: (req, file, callback) => {
                 const currentDate = new Date();
                 const timestamp = currentDate.getTime();

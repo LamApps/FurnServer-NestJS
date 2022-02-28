@@ -17,6 +17,7 @@ const roles_entity_1 = require("../roles/roles.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
 const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
 const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
+const room_banned_users_1 = require("../chat/rooms/entities/room_banned_users");
 let AdminuserEntity = class AdminuserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -85,6 +86,18 @@ __decorate([
     __metadata("design:type", Boolean)
 ], AdminuserEntity.prototype, "active", void 0);
 __decorate([
+    typeorm_1.Column({ default: true }),
+    __metadata("design:type", Boolean)
+], AdminuserEntity.prototype, "chat_alert", void 0);
+__decorate([
+    typeorm_1.Column({ default: true }),
+    __metadata("design:type", Boolean)
+], AdminuserEntity.prototype, "sound", void 0);
+__decorate([
+    typeorm_1.Column({ default: 5 }),
+    __metadata("design:type", Number)
+], AdminuserEntity.prototype, "alert_fadetime", void 0);
+__decorate([
     typeorm_1.ManyToOne(type => roles_entity_1.RolesEntity, roles => roles.adminusers),
     __metadata("design:type", roles_entity_1.RolesEntity)
 ], AdminuserEntity.prototype, "roles", void 0);
@@ -113,6 +126,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], AdminuserEntity.prototype, "contact_users", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_banned_users_1.RoomBannedUsersEntity, room_banned => room_banned.adminuser),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "banned_users", void 0);
 __decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),

@@ -14,4 +14,7 @@ export class UpdateAdminuserDto {
     photo: string;
     mobile: string;
     password: string;
+    chatalert: boolean;
+    sound: boolean;
+    alert_fadetime: number;
 }

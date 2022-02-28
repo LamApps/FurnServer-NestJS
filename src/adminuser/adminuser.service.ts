@@ -121,6 +121,9 @@ export class AdminuserService {
     user.position = dto.position;
     user.email = dto.email;
     user.active = dto.active;
+    user.chat_alert = dto.chatalert;
+    user.sound = dto.sound;
+    user.alert_fadetime = dto.alert_fadetime;
 
     if (dto.mobile && dto.mobile != "") {
       user.mobile = dto.mobile;

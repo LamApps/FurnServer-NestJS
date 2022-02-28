@@ -13,6 +13,7 @@ import { Socket, Server } from 'socket.io';
 import * as socketioJwt from 'socketio-jwt';
 import { SECRET } from 'src/config';
 import { PrivateService } from './private/private.service';
+import { RoomsService } from './rooms/rooms.service';
 
 @WebSocketGateway({
   cors: {
@@ -23,6 +24,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   constructor(
     private privateService: PrivateService,
+    private roomService: RoomsService,
   ){
 
   }
@@ -53,11 +55,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ): Promise<any> {
     const room = 'room_' + data.roomId;
     client.leave(room);
-    client.data = client.data.uid?{...client.data, room: room}:{name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId};
+    client.data = {...client.data, room: room};
     client.join(room);
-    const clientList = await this.server.in(room).fetchSockets();
-    const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
-    this.server.in(room).emit('usersRoom', userList);
+    this.emitRoomUser(room);
   }
   @SubscribeMessage('roomMessage')
   async onRoomMessage(
@@ -66,7 +66,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ): Promise<any> {
     const roomName = client.data.room;
     if(roomName) {
-      client.to(roomName).emit('roomMessage', {sender: client.data.name, message: data, avatar: client.data.avatar});
+      client.to(roomName).emit('roomMessage', {id: client.id, name: client.data.name, message: data, avatar: client.data.avatar, userId: client.data.userId});
     }
   }
   @SubscribeMessage('leaveRoom')
@@ -75,12 +75,51 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
     const room = client.data.room;
+    client.data.room = null;
     client.leave(room);
-    const clientList = await this.server.in(room).fetchSockets();
-    const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
-    client.to(room).emit('usersRoom', userList);
+    this.emitRoomUser(room);
+  }
+  @SubscribeMessage('clearRoomMessages')
+  async onClearRoomMessages(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const room = client.data.room;
+    client.to(room).emit('clearRoomMessages');
   }
 
+  @SubscribeMessage('kickUser')
+  async onKickUser(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const room = client.data.room;
+    const kick_socket = this.server.sockets.sockets.get(data.id);
+    await kick_socket.leave(room);
+    this.server.of('/').to(data.id).emit('kickUser');
+    this.emitRoomUser(room);
+  }
+  
+  @SubscribeMessage('banUser')
+  async onBanUser(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const room = client.data.room;
+    const kick_socket = this.server.sockets.sockets.get(data.id);
+    await kick_socket.leave(room);
+    this.server.of('/').to(data.id).emit('banUser');
+    this.emitRoomUser(room);
+    this.roomService.banUser(room, data);
+  }
+
+  @SubscribeMessage('getUserList')
+  async onGetUserList(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    this.emitUserList();
+  }
   @SubscribeMessage('getConnectedUsers')
   async onGetConnectedUsers(
     @MessageBody() data: any,
@@ -89,9 +128,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const clientList = await this.server.of('/').fetchSockets();
     const userList = {};
     clientList.map(clientSocket=>{
-      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, status: clientSocket.data.status}
     });
-    return { event: 'userList', data: userList };
+    return userList;
   }
 
   @SubscribeMessage('privateMessage')
@@ -108,6 +147,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  //status change handler
+  @SubscribeMessage('statusChange')
+  async onStatusChange(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    client.data = {...client.data, status: data};
+    this.emitUserList();
+    if(client.data.room) {
+      this.emitRoomUser(client.data.room);
+    }
+  }
+  
+
   //login handler
   @SubscribeMessage('userLogin')
   async onUserLogin(
@@ -115,13 +168,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
     console.log('userLogin');
-    client.data = {name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId};
-    const clientList = await this.server.of('/').fetchSockets();
-    const userList = {};
-    clientList.map(clientSocket=>{
-      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
-    });
-    this.server.of('/').emit('userList', userList);
+    client.data = {name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId, status: 'success'};
+    this.emitUserList();
   }
 
   //logout handler
@@ -131,12 +179,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
     client.disconnect(true);
-    const clientList = await this.server.of('/').fetchSockets();
-    const userList = {};
-    clientList.map(clientSocket=>{
-      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
-    });
-    this.server.of('/').emit('userList', userList);
+    this.emitUserList();
   }
 
   afterInit(server: any) {
@@ -145,14 +188,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket, ...args: any[]) {
     const query = client.handshake.query;
-    client.data = {name: query.fullName, company: query.company, avatar: query.avatar, userId: query.userId};
-
-    const clientList = await this.server.of('/').fetchSockets();
-    const userList = {};
-    clientList.map(clientSocket=>{
-      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
-    });
-    this.server.of('/').emit('userList', userList);
+    client.data = {name: query.fullName, company: query.company, avatar: query.avatar, userId: query.userId, status: 'success'};
+    
+    this.emitUserList();
 
     // const clientList = await this.server.of('/').fetchSockets();
     // const userList = clientList.map(clientSocket=>({id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
@@ -164,14 +202,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('disconnect');
     const userRoom = client.data.room;
     if(userRoom){
-      const clientList = await this.server.in(userRoom).fetchSockets();
-      const userList = clientList.map(clientSocket=>({name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar}));
-      client.in(userRoom).emit('usersRoom', userList);
+      this.emitRoomUser(userRoom);
     }
+    this.emitUserList();
+  }
+  async emitRoomUser(roomName) {
+    const clientList = await this.server.in(roomName).fetchSockets();
+    const userList = clientList.map(clientSocket=>({id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId, status: clientSocket.data.status}));
+    this.server.in(roomName).emit('usersRoom', userList);
+
+  }
+  async emitUserList() {
     const clientList = await this.server.of('/').fetchSockets();
     const userList = {};
     clientList.map(clientSocket=>{
-      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId}
+      userList[clientSocket.data.userId+'_'+clientSocket.data.company] = {id: clientSocket.id, status: clientSocket.data.status}
     });
     this.server.of('/').emit('userList', userList);
   }

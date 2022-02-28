@@ -17,6 +17,16 @@ export class RoomsController {
     return this.roomsService.verify(verifyRoomDto);
   }
 
+  @Get('get-banned/:id')
+  getBannedUsers(@Param('id') id: number) {
+    return this.roomsService.getBannedUsers(+id);
+  }
+
+  @Get('remove-banned/:id')
+  removeBannedUsers(@Param('id') id: number) {
+    return this.roomsService.removeBannedUsers(+id);
+  }
+
   @Get()
   findAll(@Query('company') company: number) {
     return this.roomsService.findAll(company);

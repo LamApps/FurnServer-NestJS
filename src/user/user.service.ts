@@ -233,6 +233,9 @@ export class UserService {
     user.email = dto.email
     user.photo = dto.photo
     user.active = dto.active
+    user.chat_alert = dto.chatalert
+    user.sound = dto.sound
+    user.alert_fadetime = dto.alert_fadetime;
     user.mobile = dto.mobile
     if (dto.timeout) {
       user.timeout = dto.timeout

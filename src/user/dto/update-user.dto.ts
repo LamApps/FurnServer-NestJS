@@ -25,4 +25,7 @@ export class UpdateUserDto {
     browser: string;
     operating_system: string;
     timeout: number;
+    chatalert: boolean;
+    sound: boolean;
+    alert_fadetime: number;
 }

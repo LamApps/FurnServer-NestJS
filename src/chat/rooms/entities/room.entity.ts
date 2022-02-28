@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { CompanyEntity } from '../../../company/company.entity';
 import { UserEntity } from '../../../user/user.entity';
 import { AdminuserEntity } from '../../../adminuser/adminuser.entity';
+import { RoomBannedUsersEntity } from './room_banned_users';
 
 @Entity('nest_rooms')
 export class RoomsEntity {
@@ -16,7 +17,11 @@ export class RoomsEntity {
 
   @Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP"})
   created: Date;
-  
+
+  @OneToMany(type => RoomBannedUsersEntity, bans=>bans.room)
+  @JoinColumn()
+  bans: RoomBannedUsersEntity[];
+
   @ManyToOne(type=>CompanyEntity, company=>company.id)
   company: CompanyEntity;
 

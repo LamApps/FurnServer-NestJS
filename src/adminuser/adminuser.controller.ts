@@ -75,7 +75,7 @@ export class AdminuserController {
   @ApiOperation({ summary: 'Add Photo'})
   @UseInterceptors(FileInterceptor('photo', {
       storage: diskStorage({
-          destination: './uploads',
+          destination: '../uploads',
           filename: (req, file, callback) => {
               const currentDate = new Date();
               const timestamp = currentDate.getTime();

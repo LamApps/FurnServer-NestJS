@@ -10,6 +10,7 @@ import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
 import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
+import { RoomBannedUsersEntity } from '../chat/rooms/entities/room_banned_users';
 
 @Entity('nest_user')
 export class UserEntity {
@@ -82,6 +83,15 @@ export class UserEntity {
   @Column()
   active: boolean;
 
+  @Column({default: true})
+  chat_alert: boolean;
+  
+  @Column({default: true})
+  sound: boolean;
+
+  @Column({default: 5})
+  alert_fadetime: number;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await argon2.hash(this.password)
@@ -114,6 +124,10 @@ export class UserEntity {
   @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.user)
   @JoinColumn()
   contact_users: ChatContactEntity[];
+
+  @OneToMany(type => RoomBannedUsersEntity, room_banned=>room_banned.user)
+  @JoinColumn()
+  banned_users: RoomBannedUsersEntity[];
 
   @Column({ default: false })
   deleted: boolean;

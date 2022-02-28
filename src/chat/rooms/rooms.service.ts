@@ -9,6 +9,7 @@ import { CompanyEntity } from '../../company/company.entity';
 import { UserEntity } from '../../user/user.entity';
 import { AdminuserEntity } from '../../adminuser/adminuser.entity';
 import { RoomsEntity } from './entities/room.entity';
+import { RoomBannedUsersEntity } from './entities/room_banned_users';
 
 @Injectable()
 export class RoomsService {
@@ -20,39 +21,42 @@ export class RoomsService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AdminuserEntity)
-    private readonly adminUserRepository: Repository<AdminuserEntity>
+    private readonly adminUserRepository: Repository<AdminuserEntity>,
+    @InjectRepository(RoomBannedUsersEntity)
+    private readonly bannedRepository: Repository<RoomBannedUsersEntity>
+
   ) {}
 
   async create(createRoomDto: CreateRoomDto) {
-    if(createRoomDto.flag === 1) {
-      let room = new RoomsEntity();
-      room.name = createRoomDto.name;
-      room.password = createRoomDto.password;
-  
-      const errors = await validate(room);
-      if (errors.length > 0) {
-        return {
-          status: HttpStatus.BAD_REQUEST,
-          message: 'Input is not valid.'
-        };
-      } else {
-  
-        const saveRoom = await this.roomsRepository.save(room);
-        
-        if(createRoomDto.type>0) {
-          const company = await this.companyRepository.findOne({ where: { id: createRoomDto.type }, relations: ['rooms'] });
-          company.rooms.push(saveRoom);
-          await this.companyRepository.save(company); 
-        }
-        
+    let room = new RoomsEntity();
+    room.name = createRoomDto.name;
+    room.password = createRoomDto.password;
+
+    const errors = await validate(room);
+    if (errors.length > 0) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Input is not valid.'
+      };
+    } else {
+      const saveRoom = await this.roomsRepository.save(room);
+
+      if(createRoomDto.type>0) {
+        const company = await this.companyRepository.findOne({ where: { id: createRoomDto.type }, relations: ['rooms'] });
+        company.rooms.push(saveRoom);
+        await this.companyRepository.save(company); 
+      }
+
+      if(createRoomDto.flag===1){
         const user = await this.adminUserRepository.findOne({ where: { id: createRoomDto.user }, relations: ['rooms'] });
         user.rooms.push(saveRoom);
         await this.adminUserRepository.save(user); 
-  
-        return { status: HttpStatus.OK, item: saveRoom }
+      }else{
+        const user = await this.userRepository.findOne({ where: { id: createRoomDto.user }, relations: ['rooms'] });
+        user.rooms.push(saveRoom);
+        await this.userRepository.save(user); 
       }
-    }else{
-
+      return { status: HttpStatus.OK, item: saveRoom }
     }
   }
 
@@ -60,7 +64,7 @@ export class RoomsService {
     const room = await this.roomsRepository.findOne({where:{id: verifyDto.id}, relations: ['company']});
     let result = room.password == verifyDto.password;
 
-    if(typeof verifyDto.company !== 'undefined') {
+    if(typeof verifyDto.company !== 'undefined' && room.company) {
       result = room.company.id === verifyDto.company;
     }
 
@@ -97,7 +101,17 @@ export class RoomsService {
   }
 
   async findPublicOne(id: number) {
-    const room = await this.roomsRepository.findOne({ where: { id: id } });
+    const room = await this.roomsRepository
+    .createQueryBuilder('room')
+    .leftJoin('room.company', 'company')
+    .leftJoin('room.user', 'user')
+    .leftJoin('room.adminuser', 'adminuser')
+    .addSelect(['company'])
+    .addSelect(['user.id','user.firstname','user.lastname','user.photo','user.company'])
+    .addSelect(['adminuser.id','adminuser.firstname','adminuser.lastname','adminuser.photo'])
+    .where('room.id = :id', {id: id})
+    .getOne();
+    // const room = await this.roomsRepository.findOne({ where: { id: id }, relations: ['company', 'user', 'adminuser'] });
     if (!room) {
       return {
         status: HttpStatus.BAD_REQUEST,
@@ -140,5 +154,62 @@ export class RoomsService {
       }
     }
     return await this.roomsRepository.delete({ id: id });
+  }
+
+  async getBannedUsers(roomId: number) {
+    return await this.bannedRepository
+    .createQueryBuilder('banned')
+    .leftJoin('banned.room', 'room')
+    .leftJoin('banned.user', 'user')
+    .leftJoin('banned.adminuser', 'adminuser')
+    .leftJoin('user.company', 'company')
+    .addSelect(['user.id','user.firstname','user.lastname','user.photo'])
+    .addSelect(['company'])
+    .addSelect(['adminuser.id','adminuser.firstname','adminuser.lastname','adminuser.photo'])
+    .where('room.id = :id', {id: roomId})
+    .getMany();
+  }
+
+  async removeBannedUsers(roomid:number) {
+    const room = await this.bannedRepository.findOne({ id: roomid });
+    if (!room) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'There is not a banned user.'
+      }
+    }
+    return await this.bannedRepository.delete({ id: roomid });
+  }
+
+  async banUser(room:string, data:any) {
+    const roomId = room.split('_')[1];
+    let qb = this.bannedRepository
+    .createQueryBuilder('banned')
+    .leftJoin('banned.room', 'room')
+    .leftJoin('banned.user', 'user')
+    .leftJoin('banned.adminuser', 'adminuser')
+    .where('room.id = :id', {id: roomId});
+    if(data.company=='Admin') qb = qb.andWhere('adminuser.id = :adminid', {adminid: data.userId})
+    else qb = qb.andWhere('user.id = :userid', {userid: data.userId})
+    const isExist = await qb.getCount();
+
+    if(isExist==0){
+      const entity = new RoomBannedUsersEntity();
+      const saveBanned = await this.bannedRepository.save(entity);
+  
+      const ban_room = await this.roomsRepository.findOne({ where: { id: roomId }, relations: ['bans'] });
+      ban_room.bans.push(saveBanned);
+      await this.roomsRepository.save(ban_room); 
+  
+      if(data.company=='Admin'){
+        const user = await this.adminUserRepository.findOne({ where: { id: data.userId }, relations: ['banned_users'] });
+        user.banned_users.push(saveBanned);
+        await this.adminUserRepository.save(user); 
+      }else{
+        const user = await this.userRepository.findOne({ where: { id: data.userId }, relations: ['banned_users'] });
+        user.banned_users.push(saveBanned);
+        await this.userRepository.save(user); 
+      }
+    }
   }
 }

@@ -46,42 +46,39 @@ export class PrivateService {
       contactTargetRepo.contact_users.push(saveContact);
       await this.adminUserRepository.save(contactTargetRepo); 
     }
-    return this.getContacts(id, contact.isAdmin);
+    return this.getContacts(id, contact.isAdmin?'true':'false');
   }
 
-  async getAllUsers(id: number, flag: boolean, slug: string) {
-    let qb = this.adminUserRepository
-    .createQueryBuilder('adminusers')
-    .select(['adminusers.id', 'adminusers.firstname', 'adminusers.lastname', 'adminusers.photo'])
-    .where('adminusers.active = :active', {active: true})
-    .andWhere(subQb => {
-      subQb.where("LOWER(adminusers.firstname) LIKE :slug", { slug: `%${slug}%` });
-      subQb.orWhere("LOWER(adminusers.lastname) LIKE :slug", { slug: `%${slug}%` });
-    });
+  async getAllUsers(id: number, cp: number, flag, slug: string) {
+    let adminUsers = [];
+    if(flag=='true'){
+      adminUsers = await this.adminUserRepository
+      .createQueryBuilder('adminusers')
+      .select(['adminusers.id', 'adminusers.firstname', 'adminusers.lastname', 'adminusers.photo'])
+      .where('adminusers.active = :active', {active: true})
+      .andWhere('(LOWER(adminusers.firstname) LIKE :slug OR LOWER(adminusers.lastname) LIKE :slug)', { slug: `%${slug}%` })
+      .andWhere('adminusers.id != :id', {id})
+      .getMany();
+    }
 
-    if(flag) qb = qb.andWhere('adminusers.id != :id', {id});
-
-    const adminUsers = await qb.getMany();
-
-    let qb1 = this.userRepository
+    let qb = this.userRepository
     .createQueryBuilder('users')
-    .leftJoinAndSelect('users.company', 'company')
+    .leftJoin('users.company', 'company')
     .select(['users.id', 'users.firstname', 'users.lastname', 'users.photo', 'company'])
     .where('users.active = :active', {active: true})
-    .andWhere(subQb => {
-      subQb.where("LOWER(users.firstname) LIKE :slug", { slug: `%${slug}%` });
-      subQb.orWhere("LOWER(users.lastname) LIKE :slug", { slug: `%${slug}%` });
-    });
-
-    if(!flag) qb1 = qb1.andWhere('users.id != :id', {id});
-
-    const users = await qb1.getMany();
+    .andWhere('users.deleted = :deleted', {deleted: false})
+    if(flag=='false') {
+      qb = qb.andWhere('users.id != :id', {id})
+      .andWhere('company.id = :cp', {cp});
+    }
+    qb = qb.andWhere('(LOWER(users.firstname) LIKE :slug OR LOWER(users.lastname) LIKE :slug)', { slug: `%${slug}%` })
+    const users = await qb.getMany();
 
     return { items: [...adminUsers, ...users] }
   }
 
-  async getContacts(id: number, flag: boolean) {
-    if(flag){
+  async getContacts(id: number, flag) {
+    if(flag=='true'){
       const qb = this.contactRepository
       .createQueryBuilder('contacts')
       .leftJoin('contacts.owner_admin', 'owner_admin')
@@ -130,6 +127,8 @@ export class PrivateService {
     else if(myFlag=='false' && yourFlag=='true') qb = qb.andWhere("((log.sender = :myId AND log.recipient_admin = :yourId) OR (log.recipient = :myId AND log.sender_admin = :yourId))", {myId, yourId});
     else if(myFlag=='false' && yourFlag=='false') qb = qb.andWhere("((log.sender = :myId AND log.recipient = :yourId) OR (log.recipient = :myId AND log.sender = :yourId))", {myId, yourId});
 
+    this.setReadMessage(myId, myFlag, yourId, yourFlag);
+    
     return await qb.getMany();
   }
 
@@ -137,8 +136,9 @@ export class PrivateService {
     let qb = this.logRepository.createQueryBuilder()
     .update(ChatLogEntity)
     .set({read: true});
-    if(yourFlag=='true') qb = qb.where("nest_chat_log.senderAdminId = :yourId", { yourId });
-    else qb = qb.where("nest_chat_log.senderId = :yourId", { yourId });
+    qb = qb.where("nest_chat_log.read = :read", { read: false });
+    if(yourFlag=='true') qb = qb.andWhere("nest_chat_log.senderAdminId = :yourId", { yourId });
+    else qb = qb.andWhere("nest_chat_log.senderId = :yourId", { yourId });
     if(myFlag=='true') qb = qb.andWhere("nest_chat_log.recipientAdminId = :myId", { myId })
     else qb = qb.andWhere("nest_chat_log.recipientId = :myId", { myId })
     return await qb.execute();

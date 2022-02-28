@@ -7,8 +7,8 @@ export class PrivateChatController {
   constructor(private readonly privateService: PrivateService) {}
 
   @Get('get-users')
-  getAllUsers(@Query('id') id: number, @Query('f') f: boolean, @Query('slug') slug: string) {
-    return this.privateService.getAllUsers(id, f, slug);
+  getAllUsers(@Query('id') id: number, @Query('cp') cp: number, @Query('f') f: boolean, @Query('slug') slug: string) {
+    return this.privateService.getAllUsers(id, cp, f, slug);
   }
 
   @Get('get-contacts')

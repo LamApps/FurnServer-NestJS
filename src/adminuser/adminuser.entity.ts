@@ -7,6 +7,7 @@ import { RolesEntity } from '../roles/roles.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
 import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
+import { RoomBannedUsersEntity } from '../chat/rooms/entities/room_banned_users';
 
 @Entity('admin_user')
 export class AdminuserEntity {
@@ -56,6 +57,14 @@ export class AdminuserEntity {
   @Column()
   active: boolean;
 
+  @Column({default: true})
+  chat_alert: boolean;
+
+  @Column({default: true})
+  sound: boolean;
+
+  @Column({default: 5})
+  alert_fadetime: number;
 
   @ManyToOne(type => RolesEntity, roles => roles.adminusers)
   roles: RolesEntity;
@@ -80,6 +89,10 @@ export class AdminuserEntity {
   @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.admin_user)
   @JoinColumn()
   contact_users: ChatContactEntity[];
+
+  @OneToMany(type => RoomBannedUsersEntity, room_banned=>room_banned.adminuser)
+  @JoinColumn()
+  banned_users: RoomBannedUsersEntity[];
 
   @BeforeInsert()
   async hashPassword() {
