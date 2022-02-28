@@ -138,11 +138,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() data: any,
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
-    this.privateService.saveChatLog({
+    const result = await this.privateService.saveChatLog({
       userId: client.data.userId,
       company: client.data.company
     }, data.receipent, data.message);
-    if(data.receipent.socketId){
+    if(result==='success' && data.receipent.socketId){
       this.server.of('/').to(data.receipent.socketId).emit('privateMessage', {sender: {...client.data}, message: data.message});
     }
   }

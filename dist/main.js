@@ -9142,11 +9142,11 @@ let ChatGateway = class ChatGateway {
         return userList;
     }
     async onPrivateMessage(data, client) {
-        this.privateService.saveChatLog({
+        const result = await this.privateService.saveChatLog({
             userId: client.data.userId,
             company: client.data.company
         }, data.receipent, data.message);
-        if (data.receipent.socketId) {
+        if (result === 'success' && data.receipent.socketId) {
             this.server.of('/').to(data.receipent.socketId).emit('privateMessage', { sender: Object.assign({}, client.data), message: data.message });
         }
     }
@@ -9423,34 +9423,24 @@ let PrivateService = class PrivateService {
         return { items: [...adminUsers, ...users] };
     }
     async getContacts(id, flag) {
-        if (flag == 'true') {
-            const qb = this.contactRepository
-                .createQueryBuilder('contacts')
-                .leftJoin('contacts.owner_admin', 'owner_admin')
-                .leftJoin('contacts.admin_user', 'admin_user')
-                .leftJoin('contacts.user', 'user')
-                .leftJoin('user.company', 'company')
-                .addSelect(['admin_user.id', 'admin_user.firstname', 'admin_user.lastname', 'admin_user.photo'])
-                .addSelect(['user.id', 'user.firstname', 'user.lastname', 'user.photo', 'user.company'])
-                .addSelect('company')
-                .where('contacts.owner_admin = :id', { id: id });
-            const contacts = await qb.getMany();
-            return contacts;
-        }
-        else {
-            const qb = this.contactRepository
-                .createQueryBuilder('contacts')
-                .leftJoin('contacts.owner', 'owner')
-                .leftJoin('contacts.admin_user', 'admin_user')
-                .leftJoin('contacts.user', 'user')
-                .leftJoin('user.company', 'company')
-                .addSelect(['admin_user.id', 'admin_user.firstname', 'admin_user.lastname', 'admin_user.photo'])
-                .addSelect(['user.id', 'user.firstname', 'user.lastname', 'user.photo', 'user.company'])
-                .addSelect('company')
-                .where('contacts.owner = :id', { id: id });
-            const contacts = await qb.getMany();
-            return contacts;
-        }
+        let qb = this.contactRepository
+            .createQueryBuilder('contacts');
+        if (flag == 'true')
+            qb = qb.leftJoin('contacts.owner_admin', 'owner_admin');
+        else
+            qb = qb.leftJoin('contacts.owner', 'owner');
+        qb = qb.leftJoin('contacts.admin_user', 'admin_user')
+            .leftJoin('contacts.user', 'user')
+            .leftJoin('user.company', 'company')
+            .addSelect(['admin_user.id', 'admin_user.firstname', 'admin_user.lastname', 'admin_user.photo'])
+            .addSelect(['user.id', 'user.firstname', 'user.lastname', 'user.photo', 'user.company'])
+            .addSelect('company');
+        if (flag == 'true')
+            qb = qb.where('contacts.owner_admin = :id', { id: id });
+        else
+            qb = qb.where('contacts.owner = :id', { id: id });
+        const contacts = await qb.getMany();
+        return contacts;
     }
     async getChatLog(myId, myFlag, yourId, yourFlag) {
         let qb = this.logRepository
@@ -9514,7 +9504,51 @@ let PrivateService = class PrivateService {
             chat_log.chat_logs_rec.push(saveLog);
             await this.adminUserRepository.save(chat_log);
         }
-        return saveLog;
+        let qb = this.contactRepository
+            .createQueryBuilder('contacts');
+        if (receipent.company)
+            qb = qb.leftJoin('contacts.owner', 'owner');
+        else
+            qb = qb.leftJoin('contacts.owner_admin', 'owner_admin');
+        qb = qb.leftJoin('contacts.admin_user', 'admin_user')
+            .leftJoin('contacts.user', 'user');
+        if (receipent.company)
+            qb = qb.where('contacts.owner = :id', { id: receipent.id });
+        else
+            qb = qb.where('contacts.owner_admin = :id', { id: receipent.id });
+        if (sender.company === 'Admin')
+            qb = qb.andWhere('contacts.admin_user = :admin_user', { admin_user: sender.userId });
+        else
+            qb = qb.andWhere('contacts.user = :user', { user: sender.userId });
+        const contacts = await qb.getCount();
+        if (contacts == 0) {
+            const entity = new chat_contact_entity_1.ChatContactEntity();
+            const saveContact = await this.contactRepository.save(entity);
+            if (receipent.company) {
+                const contactRepo = await this.userRepository.findOne({ where: { id: receipent.id }, relations: ['chat_contacts'] });
+                contactRepo.chat_contacts.push(saveContact);
+                await this.userRepository.save(contactRepo);
+            }
+            else {
+                const contactRepo = await this.adminUserRepository.findOne({ where: { id: receipent.id }, relations: ['chat_contacts'] });
+                contactRepo.chat_contacts.push(saveContact);
+                await this.adminUserRepository.save(contactRepo);
+            }
+            if (sender.company === 'Admin') {
+                const contactTargetRepo = await this.adminUserRepository.findOne({ where: { id: sender.userId }, relations: ['contact_users'] });
+                contactTargetRepo.contact_users.push(saveContact);
+                await this.adminUserRepository.save(contactTargetRepo);
+                return 'success';
+            }
+            else {
+                const contactTargetRepo = await this.userRepository.findOne({ where: { id: sender.userId }, relations: ['contact_users'] });
+                contactTargetRepo.contact_users.push(saveContact);
+                await this.userRepository.save(contactTargetRepo);
+                return 'success';
+            }
+        }
+        else
+            return 'success';
     }
     async getUnreadMessages(myId, myFlag) {
         let qb = this.logRepository
@@ -10349,7 +10383,7 @@ exports.CreateContactDto = CreateContactDto;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("80299b2f7c1c96d17072")
+/******/ 		__webpack_require__.h = () => ("e3f7c4540fb9b2b3a536")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
