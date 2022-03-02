@@ -18,12 +18,16 @@ const typeorm_1 = require("@nestjs/typeorm");
 const class_validator_1 = require("class-validator");
 const typeorm_2 = require("typeorm");
 const company_menu_entity_1 = require("../company-menu/company-menu.entity");
+const company_role_entity_1 = require("../company-role/company-role.entity");
+const role_menu_entity_1 = require("../company-role/role-menu.entity");
 const menu_entity_1 = require("../menu/menu.entity");
 const password_entity_1 = require("../password/password.entity");
 const company_entity_1 = require("./company.entity");
 let CompanyService = class CompanyService {
-    constructor(companyRepository) {
+    constructor(companyRepository, companyRoleRepository, roleMenuRepository) {
         this.companyRepository = companyRepository;
+        this.companyRoleRepository = companyRoleRepository;
+        this.roleMenuRepository = roleMenuRepository;
     }
     async create(createCompanyDto) {
         const { name, app_id, number, code } = createCompanyDto;
@@ -128,6 +132,12 @@ let CompanyService = class CompanyService {
                 message: 'There is not company.'
             };
         }
+        const roles = await this.companyRoleRepository
+            .createQueryBuilder('company_role')
+            .select(['company_role.id'])
+            .where('company_role.active = :active', { active: true })
+            .getMany();
+        const rolesArray = roles.map(item => item.id);
         for (let i = 0; i < dto.length; i++) {
             const one = dto[i];
             const permission = one.permission;
@@ -195,7 +205,11 @@ let CompanyService = class CompanyService {
 CompanyService = __decorate([
     common_1.Injectable(),
     __param(0, typeorm_1.InjectRepository(company_entity_1.CompanyEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, typeorm_1.InjectRepository(company_role_entity_1.CompanyRoleEntity)),
+    __param(2, typeorm_1.InjectRepository(role_menu_entity_1.RoleMenuEntity)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository])
 ], CompanyService);
 exports.CompanyService = CompanyService;
 //# sourceMappingURL=company.service.js.map

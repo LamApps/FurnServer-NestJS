@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'ty
 import { CompanyMenuEntity } from '../company-menu/company-menu.entity';
 import { CompanyEntity } from '../company/company.entity';
 import { Permission } from '../enum/permission.enum';
-import { UserMenuEntity } from '../user-menu/user-menu.entity';
+import { RoleMenuEntity } from '../company-role/role-menu.entity';
 
 @Entity('nest_menu')
 export class MenuEntity {
@@ -18,6 +18,7 @@ export class MenuEntity {
   @OneToMany(type=>CompanyMenuEntity, menu=>menu.menu)
   company_menus: CompanyMenuEntity[];
 
-  @OneToMany(type=>UserMenuEntity, menu=>menu.menu)
-  user_menus: UserMenuEntity[];
+  @OneToMany(type=>RoleMenuEntity, menu=>menu.menu)
+  role_menus: RoleMenuEntity[];
+
 }

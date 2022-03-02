@@ -12,7 +12,6 @@ import { HttpStatus } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { CompanyEntity } from '../company/company.entity';
 import { MenuEntity } from '../menu/menu.entity';
-import { UserMenuEntity } from '../user-menu/user-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { RoleMenuEntity } from "../company-role/role-menu.entity";
 
@@ -29,8 +28,8 @@ export class UserService {
     const qb = await getRepository(UserEntity)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
-      .leftJoinAndSelect('user.menus', 'menus')
       .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.menus', 'menus')
       .leftJoinAndSelect('menus.menu', 'menu')
       .where('deleted = false');
 
@@ -42,8 +41,8 @@ export class UserService {
     const qb = await getRepository(UserEntity)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
-      .leftJoinAndSelect('user.menus', 'menus')
       .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.menus', 'menus')
       .leftJoinAndSelect('menus.menu', 'menu')
       .where('deleted = false');
     const user = await qb.where({id: id}).getOne();
@@ -61,9 +60,9 @@ export class UserService {
     const qb = await getRepository(UserEntity)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
-      .leftJoinAndSelect('user.menus', 'menus')
-      .leftJoinAndSelect('menus.menu', 'menu')
       .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.menus', 'menus')
+      .leftJoinAndSelect('menus.menu', 'menu')
       .where('deleted = false')
 	    .andWhere('user.company = :company', { company });
 
@@ -75,9 +74,9 @@ export class UserService {
     const qb = await getRepository(UserEntity)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
-      .leftJoinAndSelect('user.menus', 'menus')
-      .leftJoinAndSelect('menus.menu', 'menu')
       .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.menus', 'menus')
+      .leftJoinAndSelect('menus.menu', 'menu')
       .where('deleted = false');
 
     const user = await qb.where({ username: username }).andWhere('LOWER(company.code) = :company', { company : company.toLowerCase() }).getOne();
@@ -200,9 +199,9 @@ export class UserService {
     const qb = await getRepository(UserEntity)
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
-      .leftJoinAndSelect('user.menus', 'menus')
-      .leftJoinAndSelect('menus.menu', 'menu')
       .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.menus', 'menus')
+      .leftJoinAndSelect('menus.menu', 'menu')
       .where({ id : id })
 
     const updated = await qb.getOne();
@@ -214,7 +213,7 @@ export class UserService {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.company', 'company')
       .leftJoinAndSelect('user.role', 'role')
-      .leftJoinAndSelect('user.menus', 'menus')
+      .leftJoinAndSelect('role.menus', 'menus')
       .leftJoinAndSelect('menus.menu', 'menu')
       .where('user.id = :id', { id: id })
       .getOne();
@@ -321,7 +320,6 @@ export class UserService {
   async updatePermission(id: number, role: number, dto: any[]) {
     var user = await this.userRepository
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.menus', 'menus')
       .leftJoinAndSelect('user.role', 'role')
       .where('user.id=:id', { id: id })
       .getOne();
@@ -336,43 +334,12 @@ export class UserService {
       const one = dto[i];
       const permission = one.permission
 
-      const menu_entity = await getRepository(MenuEntity)
-        .createQueryBuilder('menu')
-        .leftJoinAndSelect('menu.user_menus', 'user_menus')
-        .where('menu.id=:id', {id: one.id})
-        .getOne();
-      if (!menu_entity) return;
-
-      var user_menu_entity = await getRepository(UserMenuEntity)
-        .createQueryBuilder('user_menu')
-        .leftJoinAndSelect('user_menu.user', 'user')
-        .leftJoinAndSelect('user_menu.menu', 'menu')
-        .where('user.id=:id', { id: id })
-        .andWhere('menu.id=:mid', { mid: one.id })
-        .getOne();
-      if (user_menu_entity) {
-        user_menu_entity.permission = permission
-        await getRepository(UserMenuEntity).save(user_menu_entity);
-      } else {
-        user_menu_entity = new UserMenuEntity();
-        user_menu_entity.permission = permission;
-
-        const saved = await getRepository(UserMenuEntity).save(user_menu_entity);
-        
-        menu_entity.user_menus.push(saved);
-        await getRepository(MenuEntity).save(menu_entity);
-
-        user.menus.push(saved);
-        user = await getRepository(UserEntity).save(user);
-      }
-      if(role > -1){
-        await getRepository(RoleMenuEntity).createQueryBuilder('role_menu')
-        .update(RoleMenuEntity)
-        .set({permission: permission})
-        .where("nest_role_menu.menuId = :menu_id", { menu_id: one.id })
-        .andWhere("nest_role_menu.roleId = :role_id", { role_id: role })
+      await getRepository(RoleMenuEntity)
+        .createQueryBuilder()
+        .update({permission: permission})
+        .where('menuId=:id', {id: one.id})
+        .andWhere('roleId=:rid', {rid: role})
         .execute();
-      }
     }
 
     
@@ -390,7 +357,7 @@ export class UserService {
       }
     }
 
-    if (role >= 0) {
+    if (role > 0) {
       const company_role = await getRepository(CompanyRoleEntity)
         .createQueryBuilder('company_role')
         .leftJoinAndSelect('company_role.users', 'users')

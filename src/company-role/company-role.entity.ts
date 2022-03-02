@@ -1,7 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import { CompanyMenuEntity } from "../company-menu/company-menu.entity";
 import { CompanyEntity } from "../company/company.entity";
-import { UserMenuEntity } from "../user-menu/user-menu.entity";
 import { UserEntity } from "../user/user.entity";
 import { RoleMenuEntity } from "./role-menu.entity";
 

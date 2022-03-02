@@ -11,9 +11,13 @@ import { AdminuserService } from '../adminuser/adminuser.service';
 import { PasswordEntity } from '../password/password.entity';
 import { EmailEntity } from '../email/email.entity';
 import { RolesEntity } from '../roles/roles.entity';
+import { CompanyRoleEntity } from '../company-role/company-role.entity';
+import { RoleMenuEntity } from '../company-role/role-menu.entity';
+
+
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CompanyEntity, UserEntity, PasswordEntity, EmailEntity, AdminuserEntity, RolesEntity])],
+  imports: [TypeOrmModule.forFeature([CompanyEntity, UserEntity, PasswordEntity, EmailEntity, AdminuserEntity, RolesEntity, CompanyRoleEntity, RoleMenuEntity])],
   controllers: [CompanyController],
   providers: [CompanyService, UserService, AdminuserService]
 })

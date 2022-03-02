@@ -4,7 +4,7 @@ import { CompanyEntity } from "../company/company.entity";
 import { Permission } from "../enum/permission.enum";
 import { MenuEntity } from "../menu/menu.entity";
 
-@Entity('nest_company_menu_1')
+@Entity('nest_company_menu')
 export class CompanyMenuEntity {
   @PrimaryGeneratedColumn()
   id: number;

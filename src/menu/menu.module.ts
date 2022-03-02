@@ -4,12 +4,16 @@ import { MenuController } from './menu.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MenuEntity } from './menu.entity';
 import { CompanyEntity } from '../company/company.entity';
+import { CompanyMenuEntity } from '../company-menu/company-menu.entity';
+import { CompanyRoleEntity } from '../company-role/company-role.entity';
+import { RoleMenuEntity } from '../company-role/role-menu.entity';
+
 import { AuthMiddleware } from '../user/auth.middleware';
 import { UserModule } from '../user/user.module';
 import { AdminuserModule } from '../adminuser/adminuser.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MenuEntity, CompanyEntity]), UserModule, AdminuserModule],
+  imports: [TypeOrmModule.forFeature([MenuEntity, CompanyEntity, CompanyMenuEntity, CompanyRoleEntity, RoleMenuEntity]), UserModule, AdminuserModule],
   controllers: [MenuController],
   providers: [MenuService]
 })

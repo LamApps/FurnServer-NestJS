@@ -20,6 +20,8 @@ const adminuser_service_1 = require("../adminuser/adminuser.service");
 const password_entity_1 = require("../password/password.entity");
 const email_entity_1 = require("../email/email.entity");
 const roles_entity_1 = require("../roles/roles.entity");
+const company_role_entity_1 = require("../company-role/company-role.entity");
+const role_menu_entity_1 = require("../company-role/role-menu.entity");
 let CompanyModule = class CompanyModule {
     configure(consumer) {
         consumer
@@ -29,7 +31,7 @@ let CompanyModule = class CompanyModule {
 };
 CompanyModule = __decorate([
     common_1.Module({
-        imports: [typeorm_1.TypeOrmModule.forFeature([company_entity_1.CompanyEntity, user_entity_1.UserEntity, password_entity_1.PasswordEntity, email_entity_1.EmailEntity, adminuser_entity_1.AdminuserEntity, roles_entity_1.RolesEntity])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([company_entity_1.CompanyEntity, user_entity_1.UserEntity, password_entity_1.PasswordEntity, email_entity_1.EmailEntity, adminuser_entity_1.AdminuserEntity, roles_entity_1.RolesEntity, company_role_entity_1.CompanyRoleEntity, role_menu_entity_1.RoleMenuEntity])],
         controllers: [company_controller_1.CompanyController],
         providers: [company_service_1.CompanyService, user_service_1.UserService, adminuser_service_1.AdminuserService]
     })

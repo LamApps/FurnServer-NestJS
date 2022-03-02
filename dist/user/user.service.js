@@ -24,8 +24,6 @@ const http_exception_1 = require("@nestjs/common/exceptions/http.exception");
 const common_2 = require("@nestjs/common");
 const argon2 = require("argon2");
 const company_entity_1 = require("../company/company.entity");
-const menu_entity_1 = require("../menu/menu.entity");
-const user_menu_entity_1 = require("../user-menu/user-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const role_menu_entity_1 = require("../company-role/role-menu.entity");
 let UserService = class UserService {
@@ -37,8 +35,8 @@ let UserService = class UserService {
         const qb = await typeorm_2.getRepository(user_entity_1.UserEntity)
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
-            .leftJoinAndSelect('user.menus', 'menus')
             .leftJoinAndSelect('user.role', 'role')
+            .leftJoinAndSelect('role.menus', 'menus')
             .leftJoinAndSelect('menus.menu', 'menu')
             .where('deleted = false');
         const users = await qb.getMany();
@@ -48,8 +46,8 @@ let UserService = class UserService {
         const qb = await typeorm_2.getRepository(user_entity_1.UserEntity)
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
-            .leftJoinAndSelect('user.menus', 'menus')
             .leftJoinAndSelect('user.role', 'role')
+            .leftJoinAndSelect('role.menus', 'menus')
             .leftJoinAndSelect('menus.menu', 'menu')
             .where('deleted = false');
         const user = await qb.where({ id: id }).getOne();
@@ -65,9 +63,9 @@ let UserService = class UserService {
         const qb = await typeorm_2.getRepository(user_entity_1.UserEntity)
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
-            .leftJoinAndSelect('user.menus', 'menus')
-            .leftJoinAndSelect('menus.menu', 'menu')
             .leftJoinAndSelect('user.role', 'role')
+            .leftJoinAndSelect('role.menus', 'menus')
+            .leftJoinAndSelect('menus.menu', 'menu')
             .where('deleted = false')
             .andWhere('user.company = :company', { company });
         const users = await qb.getMany();
@@ -77,9 +75,9 @@ let UserService = class UserService {
         const qb = await typeorm_2.getRepository(user_entity_1.UserEntity)
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
-            .leftJoinAndSelect('user.menus', 'menus')
-            .leftJoinAndSelect('menus.menu', 'menu')
             .leftJoinAndSelect('user.role', 'role')
+            .leftJoinAndSelect('role.menus', 'menus')
+            .leftJoinAndSelect('menus.menu', 'menu')
             .where('deleted = false');
         const user = await qb.where({ username: username }).andWhere('LOWER(company.code) = :company', { company: company.toLowerCase() }).getOne();
         if (!user) {
@@ -190,9 +188,9 @@ let UserService = class UserService {
         const qb = await typeorm_2.getRepository(user_entity_1.UserEntity)
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
-            .leftJoinAndSelect('user.menus', 'menus')
-            .leftJoinAndSelect('menus.menu', 'menu')
             .leftJoinAndSelect('user.role', 'role')
+            .leftJoinAndSelect('role.menus', 'menus')
+            .leftJoinAndSelect('menus.menu', 'menu')
             .where({ id: id });
         const updated = await qb.getOne();
         return updated;
@@ -202,7 +200,7 @@ let UserService = class UserService {
             .createQueryBuilder('user')
             .leftJoinAndSelect('user.company', 'company')
             .leftJoinAndSelect('user.role', 'role')
-            .leftJoinAndSelect('user.menus', 'menus')
+            .leftJoinAndSelect('role.menus', 'menus')
             .leftJoinAndSelect('menus.menu', 'menu')
             .where('user.id = :id', { id: id })
             .getOne();
@@ -293,7 +291,6 @@ let UserService = class UserService {
     async updatePermission(id, role, dto) {
         var user = await this.userRepository
             .createQueryBuilder('user')
-            .leftJoinAndSelect('user.menus', 'menus')
             .leftJoinAndSelect('user.role', 'role')
             .where('user.id=:id', { id: id })
             .getOne();
@@ -306,41 +303,12 @@ let UserService = class UserService {
         for (let i = 0; i < dto.length; i++) {
             const one = dto[i];
             const permission = one.permission;
-            const menu_entity = await typeorm_2.getRepository(menu_entity_1.MenuEntity)
-                .createQueryBuilder('menu')
-                .leftJoinAndSelect('menu.user_menus', 'user_menus')
-                .where('menu.id=:id', { id: one.id })
-                .getOne();
-            if (!menu_entity)
-                return;
-            var user_menu_entity = await typeorm_2.getRepository(user_menu_entity_1.UserMenuEntity)
-                .createQueryBuilder('user_menu')
-                .leftJoinAndSelect('user_menu.user', 'user')
-                .leftJoinAndSelect('user_menu.menu', 'menu')
-                .where('user.id=:id', { id: id })
-                .andWhere('menu.id=:mid', { mid: one.id })
-                .getOne();
-            if (user_menu_entity) {
-                user_menu_entity.permission = permission;
-                await typeorm_2.getRepository(user_menu_entity_1.UserMenuEntity).save(user_menu_entity);
-            }
-            else {
-                user_menu_entity = new user_menu_entity_1.UserMenuEntity();
-                user_menu_entity.permission = permission;
-                const saved = await typeorm_2.getRepository(user_menu_entity_1.UserMenuEntity).save(user_menu_entity);
-                menu_entity.user_menus.push(saved);
-                await typeorm_2.getRepository(menu_entity_1.MenuEntity).save(menu_entity);
-                user.menus.push(saved);
-                user = await typeorm_2.getRepository(user_entity_1.UserEntity).save(user);
-            }
-            if (role > -1) {
-                await typeorm_2.getRepository(role_menu_entity_1.RoleMenuEntity).createQueryBuilder('role_menu')
-                    .update(role_menu_entity_1.RoleMenuEntity)
-                    .set({ permission: permission })
-                    .where("nest_role_menu.menuId = :menu_id", { menu_id: one.id })
-                    .andWhere("nest_role_menu.roleId = :role_id", { role_id: role })
-                    .execute();
-            }
+            await typeorm_2.getRepository(role_menu_entity_1.RoleMenuEntity)
+                .createQueryBuilder()
+                .update({ permission: permission })
+                .where('menuId=:id', { id: one.id })
+                .andWhere('roleId=:rid', { rid: role })
+                .execute();
         }
         if (user.role && role != -2) {
             const company_role = await typeorm_2.getRepository(company_role_entity_1.CompanyRoleEntity)
@@ -355,7 +323,7 @@ let UserService = class UserService {
                 await typeorm_2.getRepository(company_role_entity_1.CompanyRoleEntity).save(company_role);
             }
         }
-        if (role >= 0) {
+        if (role > 0) {
             const company_role = await typeorm_2.getRepository(company_role_entity_1.CompanyRoleEntity)
                 .createQueryBuilder('company_role')
                 .leftJoinAndSelect('company_role.users', 'users')

@@ -8,8 +8,7 @@ import { CompanyRoleEntity } from './company-role.entity';
 import { CreateCompanyRoleDto } from './dto/create-company-role.dto';
 import { UpdateCompanyRoleDto } from './dto/update-company-role.dto';
 import { RoleMenuEntity } from './role-menu.entity';
-import { UserMenuEntity } from '../user-menu/user-menu.entity';
-
+import { UserEntity } from '../user/user.entity';
 
 @Injectable()
 export class CompanyRoleService {
@@ -165,6 +164,19 @@ export class CompanyRoleService {
         message: 'There is not role.'
       };
     }
-    return await getRepository(CompanyRoleEntity).update(id, { active: false });
+
+    const users = await getRepository(UserEntity)
+    .createQueryBuilder('user')  
+    .select(['user.username'])
+    .leftJoin('user.role', 'role')
+    .where('user.role = :id', {id})
+    .getMany();
+
+    if(users.length>0){
+      return { flag: 'exist', payload: users };
+    }else{
+      await getRepository(CompanyRoleEntity).update(id, { active: false });
+      return { flag: 'success' };
+    }
   }
 }

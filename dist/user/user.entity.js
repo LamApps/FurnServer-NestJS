@@ -13,7 +13,6 @@ exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 const argon2 = require("argon2");
 const company_entity_1 = require("../company/company.entity");
-const user_menu_entity_1 = require("../user-menu/user-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
 const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
@@ -139,11 +138,6 @@ __decorate([
     typeorm_1.ManyToOne(type => company_entity_1.CompanyEntity, company => company.users),
     __metadata("design:type", company_entity_1.CompanyEntity)
 ], UserEntity.prototype, "company", void 0);
-__decorate([
-    typeorm_1.OneToMany(type => user_menu_entity_1.UserMenuEntity, menu => menu.user),
-    typeorm_1.JoinColumn(),
-    __metadata("design:type", Array)
-], UserEntity.prototype, "menus", void 0);
 __decorate([
     typeorm_1.OneToMany(type => room_entity_1.RoomsEntity, room => room.user),
     typeorm_1.JoinColumn(),

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import { CompanyMenuEntity } from "../company-menu/company-menu.entity";
+import { MenuEntity } from "../menu/menu.entity";
 import { Permission } from "../enum/permission.enum";
 import { CompanyRoleEntity } from "./company-role.entity";
 
@@ -11,8 +11,8 @@ export class RoleMenuEntity {
   @ManyToOne(type=>CompanyRoleEntity, role=>role.menus)
   role: CompanyRoleEntity;
 
-  @ManyToOne(type=>CompanyMenuEntity, menu=>menu.roles)
-  menu: CompanyMenuEntity;
+  @ManyToOne(type=>MenuEntity, menu=>menu.role_menus)
+  menu: MenuEntity;
 
   @Column({
     type: 'enum',

@@ -26,7 +26,6 @@ import { getMetadataArgsStorage } from 'typeorm';
 
 import { MailerModule } from '@nestjs-modules/mailer';
 import { CompanyMenuModule } from './company-menu/company-menu.module';
-import { UserMenuModule } from './user-menu/user-menu.module';
 import { CompanyRoleModule } from './company-role/company-role.module';
 import { UtilsModule } from './utils/utils.module';
 import { CodeModule } from './code/code.module';
@@ -80,7 +79,6 @@ import { ChatModule } from './chat/chat.module';
       }
     }),
     CompanyMenuModule,
-    UserMenuModule,
     CompanyRoleModule,
     UtilsModule,
     CodeModule,

@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { getRepository, Repository } from 'typeorm';
 import { CompanyMenuEntity } from '../company-menu/company-menu.entity';
+import { CompanyRoleEntity } from '../company-role/company-role.entity';
+import { RoleMenuEntity } from '../company-role/role-menu.entity';
 import { MenuEntity } from '../menu/menu.entity';
 import { PasswordEntity } from '../password/password.entity';
 import { CompanyEntity } from './company.entity';
@@ -14,6 +16,10 @@ export class CompanyService {
   constructor(
     @InjectRepository(CompanyEntity)
     private readonly companyRepository: Repository<CompanyEntity>,
+    @InjectRepository(CompanyRoleEntity)
+    private readonly companyRoleRepository: Repository<CompanyRoleEntity>,
+    @InjectRepository(RoleMenuEntity)
+    private readonly roleMenuRepository: Repository<RoleMenuEntity>,
   ) {}
   
   async create(createCompanyDto: CreateCompanyDto) {
@@ -128,6 +134,15 @@ export class CompanyService {
         message: 'There is not company.'
       }
     }
+
+    //get role array from company
+    const roles = await this.companyRoleRepository
+    .createQueryBuilder('company_role')
+    .select(['company_role.id'])
+    .where('company_role.active = :active', {active: true})
+    .getMany();
+
+    const rolesArray = roles.map(item=>item.id);
 
     for (let i = 0; i < dto.length; i++) {
       const one = dto[i];

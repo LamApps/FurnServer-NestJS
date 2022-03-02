@@ -5,7 +5,6 @@ import { DeviceEntity } from '../device/device.entity';
 import { Role } from '../enum/role.enum';
 import { CompanyEntity } from '../company/company.entity';
 import { AppsEntity } from '../apps/apps.entity';
-import { UserMenuEntity } from '../user-menu/user-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
@@ -100,10 +99,6 @@ export class UserEntity {
   
   @ManyToOne(type => CompanyEntity, company => company.users)
   company: CompanyEntity;
-  
-  @OneToMany(type => UserMenuEntity, menu=>menu.user)
-  @JoinColumn()
-  menus: UserMenuEntity[];
 
   @OneToMany(type => RoomsEntity, room=>room.user)
   @JoinColumn()

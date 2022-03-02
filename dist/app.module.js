@@ -37,7 +37,6 @@ const menu_module_1 = require("./menu/menu.module");
 const typeorm_3 = require("typeorm");
 const mailer_1 = require("@nestjs-modules/mailer");
 const company_menu_module_1 = require("./company-menu/company-menu.module");
-const user_menu_module_1 = require("./user-menu/user-menu.module");
 const company_role_module_1 = require("./company-role/company-role.module");
 const utils_module_1 = require("./utils/utils.module");
 const code_module_1 = require("./code/code.module");
@@ -93,7 +92,6 @@ ApplicationModule = __decorate([
                 }
             }),
             company_menu_module_1.CompanyMenuModule,
-            user_menu_module_1.UserMenuModule,
             company_role_module_1.CompanyRoleModule,
             utils_module_1.UtilsModule,
             code_module_1.CodeModule,
