@@ -248,6 +248,7 @@ const company_role_module_1 = __webpack_require__(145);
 const utils_module_1 = __webpack_require__(150);
 const code_module_1 = __webpack_require__(155);
 const chat_module_1 = __webpack_require__(160);
+const sales_order_module_1 = __webpack_require__(175);
 let ApplicationModule = class ApplicationModule {
     constructor(connection) {
         this.connection = connection;
@@ -303,6 +304,7 @@ ApplicationModule = __decorate([
             utils_module_1.UtilsModule,
             code_module_1.CodeModule,
             chat_module_1.ChatModule,
+            sales_order_module_1.SalesOrderModule,
         ],
         controllers: [
             app_controller_1.AppController
@@ -7968,8 +7970,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CompanyRoleService = void 0;
 const common_1 = __webpack_require__(6);
 const typeorm_1 = __webpack_require__(12);
-const company_menu_entity_1 = __webpack_require__(21);
 const company_entity_1 = __webpack_require__(15);
+const menu_entity_1 = __webpack_require__(23);
 const company_role_entity_1 = __webpack_require__(25);
 const role_menu_entity_1 = __webpack_require__(22);
 const user_entity_1 = __webpack_require__(13);
@@ -8005,18 +8007,19 @@ let CompanyRoleService = class CompanyRoleService {
         newRole.menus = [];
         for (let i = 0; i < menus.length; i++) {
             const menu = menus[i];
-            var company_menu_entity = await typeorm_1.getRepository(company_menu_entity_1.CompanyMenuEntity)
-                .createQueryBuilder('company_menu')
-                .leftJoinAndSelect('company_menu.roles', 'roles')
-                .where('company_menu.id=:id', { id: menu.id })
+            var menu_entity = await typeorm_1.getRepository(menu_entity_1.MenuEntity)
+                .createQueryBuilder('menu')
+                .leftJoinAndSelect('menu.role_menus', 'role_menus')
+                .where('menu.id=:id', { id: menu.id })
                 .getOne();
-            if (!company_menu_entity)
+            menu.id == 131 && console.log(menu.id, menu_entity);
+            if (!menu_entity)
                 continue;
             const roleMenu = new role_menu_entity_1.RoleMenuEntity();
             roleMenu.permission = menu.permission;
             const saved = await typeorm_1.getRepository(role_menu_entity_1.RoleMenuEntity).save(roleMenu);
-            company_menu_entity.roles.push(saved);
-            await typeorm_1.getRepository(company_menu_entity_1.CompanyMenuEntity).save(company_menu_entity);
+            menu_entity.role_menus.push(saved);
+            await typeorm_1.getRepository(menu_entity_1.MenuEntity).save(menu_entity);
             newRole.menus.push(saved);
         }
         const savedRole = await typeorm_1.getRepository(company_role_entity_1.CompanyRoleEntity).save(newRole);
@@ -8075,19 +8078,19 @@ let CompanyRoleService = class CompanyRoleService {
                 roleEnity.menus.push(saved);
             }
             else {
-                var company_menu_entity = await typeorm_1.getRepository(company_menu_entity_1.CompanyMenuEntity)
-                    .createQueryBuilder('company_menu')
-                    .leftJoinAndSelect('company_menu.roles', 'roles')
-                    .where('company_menu.id=:id', { id: menu.id })
+                var menu_entity = await typeorm_1.getRepository(menu_entity_1.MenuEntity)
+                    .createQueryBuilder('menu')
+                    .leftJoinAndSelect('menu.role_menus', 'role_menus')
+                    .where('menu.id=:id', { id: menu.id })
                     .getOne();
-                console.log(company_menu_entity);
-                if (!company_menu_entity)
+                console.log(menu_entity);
+                if (!menu_entity)
                     continue;
                 var roleMenu = new role_menu_entity_1.RoleMenuEntity();
                 roleMenu.permission = menu.permission;
                 const saved = await typeorm_1.getRepository(role_menu_entity_1.RoleMenuEntity).save(roleMenu);
-                company_menu_entity.roles.push(saved);
-                await typeorm_1.getRepository(company_menu_entity_1.CompanyMenuEntity).save(company_menu_entity);
+                menu_entity.role_menus.push(saved);
+                await typeorm_1.getRepository(menu_entity_1.MenuEntity).save(menu_entity);
                 roleEnity.menus.push(saved);
             }
         }
@@ -10132,6 +10135,226 @@ __decorate([
 exports.CreateContactDto = CreateContactDto;
 
 
+/***/ }),
+/* 175 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SalesOrderModule = void 0;
+const common_1 = __webpack_require__(6);
+const axios_1 = __webpack_require__(176);
+const sales_order_service_1 = __webpack_require__(177);
+const sales_order_controller_1 = __webpack_require__(179);
+let SalesOrderModule = class SalesOrderModule {
+};
+SalesOrderModule = __decorate([
+    common_1.Module({
+        imports: [axios_1.HttpModule],
+        controllers: [sales_order_controller_1.SalesOrderController],
+        providers: [sales_order_service_1.SalesOrderService]
+    })
+], SalesOrderModule);
+exports.SalesOrderModule = SalesOrderModule;
+
+
+/***/ }),
+/* 176 */
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("@nestjs/axios");
+
+/***/ }),
+/* 177 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SalesOrderService = void 0;
+const common_1 = __webpack_require__(6);
+const axios_1 = __webpack_require__(176);
+const operators_1 = __webpack_require__(178);
+let SalesOrderService = class SalesOrderService {
+    constructor(httpService) {
+        this.httpService = httpService;
+    }
+    search(dto) {
+        let apiURL = '';
+        const company = dto.company;
+        if (company == 1)
+            apiURL = 'http://star.furnserve.com:8980';
+        else if (company == 2)
+            apiURL = 'http://74.84.202.118:8981';
+        else
+            apiURL = 'http://star.furnserve.com:8980';
+        apiURL += '/getSalesOrder/rest/getSalesOrder/SalesOrderlkup';
+        const headersRequest = {
+            'Content-Type': 'application/json',
+            'context1': 'app',
+            'context2': 'app123',
+            'begDate': dto.data.begindate,
+            'endDate': dto.data.enddate,
+            'inso': dto.data.so,
+            'ingov': dto.data.your,
+            'incustno': dto.data.customer,
+            'inname': dto.data.lastname,
+            'inloc': dto.data.location,
+            'inphone': dto.data.phone,
+            'inacct': dto.data.accounttype,
+            'doopen': dto.data.showOpen,
+            'inslsprn': dto.data.person,
+        };
+        return this.httpService.get(apiURL, { headers: headersRequest }).pipe(operators_1.map((res) => res.data));
+    }
+    getDetail(dto) {
+        let apiURL = '';
+        const company = dto.company;
+        if (company == 1)
+            apiURL = this.getUrlFromCompanyId(company);
+        apiURL += '/getSalesOrder/rest/getSalesOrder/getSalesOrder';
+        const headersRequest = {
+            'Content-Type': 'application/json',
+            'context1': 'app',
+            'context2': 'app123',
+            'so_no': dto.sa_no,
+        };
+        return this.httpService.get(apiURL, { headers: headersRequest }).pipe(operators_1.map((res) => res.data));
+    }
+    getUrlFromCompanyId(id) {
+        switch (id) {
+            case 1:
+                return 'http://star.furnserve.com:8980';
+            case 2:
+                return 'http://74.84.202.118:8981';
+            case 4:
+                return 'http://74.84.202.117:7070';
+            case 5:
+                return 'http://74.84.202.117:7075';
+            case 6:
+                return 'http://74.84.202.117:7080';
+            case 7:
+                return 'http://74.84.202.117:7085';
+            default:
+                return 'http://star.furnserve.com:8980';
+        }
+    }
+};
+SalesOrderService = __decorate([
+    common_1.Injectable(),
+    __metadata("design:paramtypes", [typeof (_a = typeof axios_1.HttpService !== "undefined" && axios_1.HttpService) === "function" ? _a : Object])
+], SalesOrderService);
+exports.SalesOrderService = SalesOrderService;
+
+
+/***/ }),
+/* 178 */
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("rxjs/operators");
+
+/***/ }),
+/* 179 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SalesOrderController = void 0;
+const common_1 = __webpack_require__(6);
+const sales_order_service_1 = __webpack_require__(177);
+const search_sales_order_dto_1 = __webpack_require__(180);
+const details_sales_order_dto_1 = __webpack_require__(181);
+let SalesOrderController = class SalesOrderController {
+    constructor(salesOrderService) {
+        this.salesOrderService = salesOrderService;
+    }
+    search(search) {
+        return this.salesOrderService.search(search);
+    }
+    getDetail(details) {
+        return this.salesOrderService.getDetail(details);
+    }
+};
+__decorate([
+    common_1.Post('search'),
+    __param(0, common_1.Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_a = typeof search_sales_order_dto_1.searchDto !== "undefined" && search_sales_order_dto_1.searchDto) === "function" ? _a : Object]),
+    __metadata("design:returntype", void 0)
+], SalesOrderController.prototype, "search", null);
+__decorate([
+    common_1.Post('get-detail'),
+    __param(0, common_1.Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_b = typeof details_sales_order_dto_1.detailsDto !== "undefined" && details_sales_order_dto_1.detailsDto) === "function" ? _b : Object]),
+    __metadata("design:returntype", void 0)
+], SalesOrderController.prototype, "getDetail", null);
+SalesOrderController = __decorate([
+    common_1.Controller('sales-order'),
+    __metadata("design:paramtypes", [typeof (_c = typeof sales_order_service_1.SalesOrderService !== "undefined" && sales_order_service_1.SalesOrderService) === "function" ? _c : Object])
+], SalesOrderController);
+exports.SalesOrderController = SalesOrderController;
+
+
+/***/ }),
+/* 180 */
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.searchDto = void 0;
+class searchDto {
+}
+exports.searchDto = searchDto;
+
+
+/***/ }),
+/* 181 */
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.detailsDto = void 0;
+class detailsDto {
+}
+exports.detailsDto = detailsDto;
+
+
 /***/ })
 /******/ 	]);
 /************************************************************************/
@@ -10194,7 +10417,7 @@ exports.CreateContactDto = CreateContactDto;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("792fbb078d10206553d6")
+/******/ 		__webpack_require__.h = () => ("356c727a76fd00495759")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */

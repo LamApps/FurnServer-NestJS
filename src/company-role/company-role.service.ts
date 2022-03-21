@@ -48,21 +48,21 @@ export class CompanyRoleService {
     for (let i = 0; i < menus.length; i++) {
       const menu = menus[i];
 
-      var company_menu_entity = await getRepository(CompanyMenuEntity)
-        .createQueryBuilder('company_menu')
-        .leftJoinAndSelect('company_menu.roles', 'roles')
-        .where('company_menu.id=:id', { id: menu.id })
+      var menu_entity = await getRepository(MenuEntity)
+        .createQueryBuilder('menu')
+        .leftJoinAndSelect('menu.role_menus', 'role_menus')
+        .where('menu.id=:id', { id: menu.id })
         .getOne();
 
-      if (!company_menu_entity) continue;
-
+      menu.id==131 && console.log(menu.id, menu_entity)
+      if (!menu_entity) continue;
       const roleMenu = new RoleMenuEntity();
       roleMenu.permission = menu.permission;
 
       const saved = await getRepository(RoleMenuEntity).save(roleMenu);
       
-      company_menu_entity.roles.push(saved);
-      await getRepository(CompanyMenuEntity).save(company_menu_entity);
+      menu_entity.role_menus.push(saved);
+      await getRepository(MenuEntity).save(menu_entity);
 
       newRole.menus.push(saved);
     }
@@ -132,22 +132,22 @@ export class CompanyRoleService {
         roleEnity.menus.push(saved);
           
       } else {
-        var company_menu_entity = await getRepository(CompanyMenuEntity)
-        .createQueryBuilder('company_menu')
-        .leftJoinAndSelect('company_menu.roles', 'roles')
-        .where('company_menu.id=:id', { id: menu.id })
+        var menu_entity = await getRepository(MenuEntity)
+        .createQueryBuilder('menu')
+        .leftJoinAndSelect('menu.role_menus', 'role_menus')
+        .where('menu.id=:id', { id: menu.id })
         .getOne();
 
-        console.log(company_menu_entity);
-        if (!company_menu_entity) continue;
+        console.log(menu_entity);
+        if (!menu_entity) continue;
 
         var roleMenu = new RoleMenuEntity();
         roleMenu.permission = menu.permission;
 
         const saved = await getRepository(RoleMenuEntity).save(roleMenu);
         
-        company_menu_entity.roles.push(saved);
-        await getRepository(CompanyMenuEntity).save(company_menu_entity);
+        menu_entity.role_menus.push(saved);
+        await getRepository(MenuEntity).save(menu_entity);
 
         roleEnity.menus.push(saved);
       }

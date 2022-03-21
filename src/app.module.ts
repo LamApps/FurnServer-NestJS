@@ -30,6 +30,7 @@ import { CompanyRoleModule } from './company-role/company-role.module';
 import { UtilsModule } from './utils/utils.module';
 import { CodeModule } from './code/code.module';
 import { ChatModule } from './chat/chat.module';
+import { SalesOrderModule } from './furnserve/sales/sales-order/sales-order.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { ChatModule } from './chat/chat.module';
     UtilsModule,
     CodeModule,
     ChatModule,
+    SalesOrderModule,
   ],
   controllers: [
     AppController

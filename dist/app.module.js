@@ -41,6 +41,7 @@ const company_role_module_1 = require("./company-role/company-role.module");
 const utils_module_1 = require("./utils/utils.module");
 const code_module_1 = require("./code/code.module");
 const chat_module_1 = require("./chat/chat.module");
+const sales_order_module_1 = require("./furnserve/sales/sales-order/sales-order.module");
 let ApplicationModule = class ApplicationModule {
     constructor(connection) {
         this.connection = connection;
@@ -96,6 +97,7 @@ ApplicationModule = __decorate([
             utils_module_1.UtilsModule,
             code_module_1.CodeModule,
             chat_module_1.ChatModule,
+            sales_order_module_1.SalesOrderModule,
         ],
         controllers: [
             app_controller_1.AppController
