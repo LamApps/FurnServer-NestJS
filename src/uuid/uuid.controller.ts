@@ -22,9 +22,9 @@ export class UuidController {
     return this.uuidService.findAll(+company);
   }
 
-  @Get('getUid')
-  async getLatestUniqueId() {
-    return this.uuidService.getLatestUniqueId();
+  @Get('getUid/:company')
+  async getLatestUniqueId(@Param('company') company: number) {
+    return this.uuidService.getLatestUniqueId(+company);
   }
 
   @Get(':id')

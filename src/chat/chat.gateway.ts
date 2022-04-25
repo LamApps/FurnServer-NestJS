@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import * as socketioJwt from 'socketio-jwt';
-import { SECRET } from 'src/config';
+import { SECRET } from '../config';
 import { PrivateService } from './private/private.service';
 import { RoomsService } from './rooms/rooms.service';
 

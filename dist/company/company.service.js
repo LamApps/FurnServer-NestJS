@@ -62,6 +62,7 @@ let CompanyService = class CompanyService {
         newCompany.active = createCompanyDto.active;
         newCompany.code = code;
         newCompany.timeout = createCompanyDto.timeout;
+        newCompany.databases = createCompanyDto.databases;
         const errors = await class_validator_1.validate(newCompany);
         if (errors.length > 0) {
             return {

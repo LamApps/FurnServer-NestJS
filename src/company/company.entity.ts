@@ -9,6 +9,7 @@ import { CompanyMenuEntity } from '../company-menu/company-menu.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { CodeEntity } from '../code/entities/code.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
+import { LocationEntity } from '../furnserve/configurator/locations/entities/location.entity';
 export class Company {}
 
 @Entity('nest_company')
@@ -31,6 +32,9 @@ export class CompanyEntity {
 
   @Column({ type: Number, default: 0 })
   timeout: number;
+
+  @Column({ default: '' })
+  databases: string;
   
   @Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP"})
   expire_date: Date;
@@ -83,5 +87,9 @@ export class CompanyEntity {
   @OneToMany(type => RoomsEntity, rooms => rooms.company)
   @JoinColumn()
   rooms: RoomsEntity[];
+
+  @OneToMany(type => LocationEntity, locations => locations.company)
+  @JoinColumn()
+  locations: LocationEntity[];
 
 }

@@ -26,4 +26,6 @@ export class CreateCompanyDto {
     readonly code: string;
 	
     readonly timeout: number;
+
+    readonly databases: string;
 }

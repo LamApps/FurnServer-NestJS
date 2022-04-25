@@ -3,6 +3,7 @@ import { ApplicationModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { urlencoded, json } from 'express';
 
 declare const module: any;
 
@@ -15,6 +16,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
   app.setViewEngine('hbs');
 
   const options = new DocumentBuilder()
@@ -27,7 +30,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/docs', app, document);
 
-  await app.listen(4201);
+  await app.listen(4201, "0.0.0.0");
 
   if (module.hot) {
     module.hot.accept();

@@ -32,7 +32,9 @@ export class UuidService {
     }
     const qb1 = await getRepository(UUIDEntity)
       .createQueryBuilder('uuid')
-      .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id });
+      .leftJoinAndSelect('uuid.company', 'company')
+      .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id })
+      .andWhere('company.id = :company', { company: createUuidDto.company });
 
     const uuid1 = await qb1.getOne();
 
@@ -69,12 +71,25 @@ export class UuidService {
     }
   }
 
-  async getLatestUniqueId() {
-    let uuid = await this.uuidRepository.findOne({
-        order: { id: 'DESC' }
-    });
-    return { id: uuid?uuid.id:0 }
+  async getLatestUniqueId(company: number) {
+    const uuids = await getRepository(UUIDEntity)
+      .createQueryBuilder('uuid')
+      .leftJoinAndSelect('uuid.company', 'company')
+      .where('company.id = :id', {id: company}).getMany();
+
+    for (let unique_id = 1; unique_id < 1000; unique_id++) {
+      let exist: boolean = false;
+      uuids.forEach(item => {
+          if (item.unique_id == ('000' + unique_id).substr(-3)) {
+              exist = true;
+          }
+      });
+      if (!exist) {
+        return { id: unique_id }
+      }
+    }
   }
+  
   async findAll(company: number) {
     const qb = await getRepository(UUIDEntity)
       .createQueryBuilder('uuid')
@@ -103,7 +118,7 @@ export class UuidService {
 
     const orig_uuid = await qb.getOne();
     console.log(orig_uuid, id)
-    if (orig_uuid && orig_uuid.id!=id) {
+    if (orig_uuid && orig_uuid.id != id) {
       return {
         status: HttpStatus.BAD_REQUEST,
         message: 'Unique ID must be unique.'

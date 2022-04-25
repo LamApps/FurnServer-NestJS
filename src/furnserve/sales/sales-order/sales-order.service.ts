@@ -12,13 +12,8 @@ export class SalesOrderService {
   constructor(private httpService: HttpService) {}
 
   search(dto: searchDto): Observable<AxiosResponse<any>> {
-    let apiURL:string = '';
-
     const company = dto.company;
-    if(company==1) apiURL = 'http://star.furnserve.com:8980';
-    else if(company==2) apiURL = 'http://74.84.202.118:8981';
-    else apiURL = 'http://star.furnserve.com:8980';
-
+    let apiURL = this.getUrlFromCompanyId(company);
     apiURL+= '/getSalesOrder/rest/getSalesOrder/SalesOrderlkup';
 
     // context1 – this is the username for the user calling the webservice
@@ -34,7 +29,6 @@ export class SalesOrderService {
     // inacct –Account Type
     // doopen – Show Open for Delivery SOs Only
     // inslsprn – Sales Person
-
     const headersRequest = {
       'Content-Type': 'application/json', // afaik this one is not needed
       'context1': 'app',
@@ -56,10 +50,8 @@ export class SalesOrderService {
   }
 
   getDetail(dto: detailsDto) {
-    let apiURL:string = '';
-
     const company = dto.company;
-    if(company==1) apiURL = this.getUrlFromCompanyId(company);
+    let apiURL = this.getUrlFromCompanyId(company);
 
     apiURL+= '/getSalesOrder/rest/getSalesOrder/getSalesOrder';
 

@@ -37,7 +37,9 @@ let UuidService = class UuidService {
         }
         const qb1 = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
             .createQueryBuilder('uuid')
-            .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id });
+            .leftJoinAndSelect('uuid.company', 'company')
+            .where('uuid.unique_id = :unique_id', { unique_id: createUuidDto.unique_id })
+            .andWhere('company.id = :company', { company: createUuidDto.company });
         const uuid1 = await qb1.getOne();
         if (uuid1) {
             return {
@@ -67,11 +69,22 @@ let UuidService = class UuidService {
             return { status: common_1.HttpStatus.OK, item: savedUuid };
         }
     }
-    async getLatestUniqueId() {
-        let uuid = await this.uuidRepository.findOne({
-            order: { id: 'DESC' }
-        });
-        return { id: uuid ? uuid.id : 0 };
+    async getLatestUniqueId(company) {
+        const uuids = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)
+            .createQueryBuilder('uuid')
+            .leftJoinAndSelect('uuid.company', 'company')
+            .where('company.id = :id', { id: company }).getMany();
+        for (let unique_id = 1; unique_id < 1000; unique_id++) {
+            let exist = false;
+            uuids.forEach(item => {
+                if (item.unique_id == ('000' + unique_id).substr(-3)) {
+                    exist = true;
+                }
+            });
+            if (!exist) {
+                return { id: unique_id };
+            }
+        }
     }
     async findAll(company) {
         const qb = await typeorm_2.getRepository(uuid_entity_1.UUIDEntity)

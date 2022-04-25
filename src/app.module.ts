@@ -31,6 +31,7 @@ import { UtilsModule } from './utils/utils.module';
 import { CodeModule } from './code/code.module';
 import { ChatModule } from './chat/chat.module';
 import { SalesOrderModule } from './furnserve/sales/sales-order/sales-order.module';
+import { LocationsModule } from './furnserve/configurator/locations/locations.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { SalesOrderModule } from './furnserve/sales/sales-order/sales-order.modu
     CodeModule,
     ChatModule,
     SalesOrderModule,
+    LocationsModule,
   ],
   controllers: [
     AppController

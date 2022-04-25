@@ -59,6 +59,7 @@ export class CompanyService {
     newCompany.active = createCompanyDto.active;
     newCompany.code = code;
     newCompany.timeout = createCompanyDto.timeout;
+    newCompany.databases = createCompanyDto.databases;
 
     const errors = await validate(newCompany);
     if (errors.length > 0) {

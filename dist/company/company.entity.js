@@ -21,6 +21,7 @@ const company_menu_entity_1 = require("../company-menu/company-menu.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const code_entity_1 = require("../code/entities/code.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
+const location_entity_1 = require("../furnserve/configurator/locations/entities/location.entity");
 class Company {
 }
 exports.Company = Company;
@@ -50,6 +51,10 @@ __decorate([
     typeorm_1.Column({ type: Number, default: 0 }),
     __metadata("design:type", Number)
 ], CompanyEntity.prototype, "timeout", void 0);
+__decorate([
+    typeorm_1.Column({ default: '' }),
+    __metadata("design:type", String)
+], CompanyEntity.prototype, "databases", void 0);
 __decorate([
     typeorm_1.Column({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" }),
     __metadata("design:type", Date)
@@ -116,6 +121,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], CompanyEntity.prototype, "rooms", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => location_entity_1.LocationEntity, locations => locations.company),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], CompanyEntity.prototype, "locations", void 0);
 CompanyEntity = __decorate([
     typeorm_1.Entity('nest_company')
 ], CompanyEntity);

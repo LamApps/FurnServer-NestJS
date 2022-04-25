@@ -27,8 +27,8 @@ let UuidController = class UuidController {
     async findAll(company) {
         return this.uuidService.findAll(+company);
     }
-    async getLatestUniqueId() {
-        return this.uuidService.getLatestUniqueId();
+    async getLatestUniqueId(company) {
+        return this.uuidService.getLatestUniqueId(+company);
     }
     findOne(id) {
         return this.uuidService.findOne(+id);
@@ -56,9 +56,10 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UuidController.prototype, "findAll", null);
 __decorate([
-    common_1.Get('getUid'),
+    common_1.Get('getUid/:company'),
+    __param(0, common_1.Param('company')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], UuidController.prototype, "getLatestUniqueId", null);
 __decorate([

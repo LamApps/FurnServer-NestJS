@@ -50,7 +50,13 @@ export class AppsService {
       const savedApps = await this.appsRepository.save(newApps);
       
       const company = await this.companyRepository.findOne({ where: { id: createAppsDto.companies }, relations: ['apps'] });
+
+      company.app_id = savedApps.app_id;
+      company.expire_date = savedApps.expire_date;
+      company.first_time_status = savedApps.first_time_status;
+      company.menu_password = savedApps.menu_password;
       company.apps.push(savedApps);
+
       await this.companyRepository.save(company);
       
       return { status: HttpStatus.OK, item: savedApps }
@@ -83,7 +89,12 @@ export class AppsService {
   }
 
   async update(id: number, updateAppsDto: UpdateAppsDto) {
-    let apps = await this.appsRepository.findOne(id);
+    let qb = await getRepository(AppsEntity)
+      .createQueryBuilder('apps')
+      .leftJoinAndSelect('apps.companies', 'companies')
+      .andWhere('apps.id = :id', { id });
+    let apps = await qb.getOne();
+
     if (!apps) {
       return {
         status: HttpStatus.BAD_REQUEST,
@@ -92,7 +103,7 @@ export class AppsService {
     }
     const { app_id } = updateAppsDto;
 
-    const qb = await getRepository(AppsEntity)
+    qb = await getRepository(AppsEntity)
       .createQueryBuilder('apps')
       .leftJoinAndSelect('apps.companies', 'companies')
       .where('apps.app_id = :app_id', { app_id })
@@ -115,6 +126,18 @@ export class AppsService {
 
     await this.appsRepository.update(id, apps);
     const updated = await this.appsRepository.findOne({ id: id });
+
+    console.log(apps);
+    let company = apps.companies;
+    console.log(company);
+    if (company) {
+      company.app_id = apps.app_id;
+      company.expire_date = apps.expire_date;
+      company.first_time_status = apps.first_time_status;
+      company.menu_password = apps.menu_password;
+      await this.companyRepository.save(company);  
+    }
+
     return { item : updated };
   }
 
