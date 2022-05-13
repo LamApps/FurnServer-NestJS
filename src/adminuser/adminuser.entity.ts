@@ -8,6 +8,7 @@ import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
 import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
 import { RoomBannedUsersEntity } from '../chat/rooms/entities/room_banned_users';
+import { RoomLogEntity } from '../chat/rooms/entities/room-log.entity';
 
 @Entity('admin_user')
 export class AdminuserEntity {
@@ -77,10 +78,14 @@ export class AdminuserEntity {
   @OneToMany(type => ChatLogEntity, chat_log=>chat_log.sender_admin)
   @JoinColumn()
   chat_logs: ChatLogEntity[];
-
+  
   @OneToMany(type => ChatLogEntity, chat_log=>chat_log.recipient_admin)
   @JoinColumn()
   chat_logs_rec: ChatLogEntity[];
+
+  @OneToMany(type => RoomLogEntity, room_log=>room_log.sender_admin)
+  @JoinColumn()
+  room_logs: RoomLogEntity[];
 
   @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.owner_admin)
   @JoinColumn()

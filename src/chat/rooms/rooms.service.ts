@@ -10,6 +10,7 @@ import { UserEntity } from '../../user/user.entity';
 import { AdminuserEntity } from '../../adminuser/adminuser.entity';
 import { RoomsEntity } from './entities/room.entity';
 import { RoomBannedUsersEntity } from './entities/room_banned_users';
+import { RoomLogEntity } from './entities/room-log.entity';
 
 @Injectable()
 export class RoomsService {
@@ -23,7 +24,9 @@ export class RoomsService {
     @InjectRepository(AdminuserEntity)
     private readonly adminUserRepository: Repository<AdminuserEntity>,
     @InjectRepository(RoomBannedUsersEntity)
-    private readonly bannedRepository: Repository<RoomBannedUsersEntity>
+    private readonly bannedRepository: Repository<RoomBannedUsersEntity>,
+    @InjectRepository(RoomLogEntity)
+    private readonly logRepository: Repository<RoomLogEntity>
 
   ) {}
 
@@ -111,7 +114,32 @@ export class RoomsService {
     .addSelect(['adminuser.id','adminuser.firstname','adminuser.lastname','adminuser.photo'])
     .where('room.id = :id', {id: id})
     .getOne();
+
     // const room = await this.roomsRepository.findOne({ where: { id: id }, relations: ['company', 'user', 'adminuser'] });
+    if (!room) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: 'There is not a room.'
+      };
+    }
+
+    if(room.password == "") room.password = "0";
+    else room.password = "1";
+    return { item : room };
+  }
+
+  async getLog(id: number) {
+    const room = await this.roomsRepository
+    .createQueryBuilder('room')
+    .leftJoin('room.logs', 'logs')
+    .leftJoin('logs.sender', 'sender')
+    .leftJoin('logs.sender_admin', 'sender_admin')
+    .addSelect(['logs'])
+    .addSelect(['sender.firstname', 'sender.lastname', 'sender.photo'])
+    .addSelect(['sender_admin.firstname', 'sender_admin.lastname', 'sender_admin.photo'])
+    .where('room.id = :id', {id: id})
+    .getOne();
+
     if (!room) {
       return {
         status: HttpStatus.BAD_REQUEST,
@@ -168,6 +196,27 @@ export class RoomsService {
     .addSelect(['adminuser.id','adminuser.firstname','adminuser.lastname','adminuser.photo'])
     .where('room.id = :id', {id: roomId})
     .getMany();
+  }
+
+  async saveRoomChatLog(sender:any, room: string, message: string) {
+    const roomId = room.split('_')[1];
+    let log = new RoomLogEntity();
+    log.message = message;
+    const saveLog = await this.logRepository.save(log);
+
+    const rooms = await this.roomsRepository.findOne({ where: { id: roomId }, relations: ['logs'] });
+    rooms.logs.push(saveLog);
+    await this.roomsRepository.save(rooms); 
+
+    if(sender.company==='Admin') {
+      const chat_log = await this.adminUserRepository.findOne({ where: { id: sender.userId }, relations: ['room_logs'] });
+      chat_log.room_logs.push(saveLog);
+      await this.adminUserRepository.save(chat_log); 
+    }else{
+      const chat_log = await this.userRepository.findOne({ where: { id: sender.userId }, relations: ['room_logs'] });
+      chat_log.room_logs.push(saveLog);
+      await this.userRepository.save(chat_log); 
+    }
   }
 
   async removeBannedUsers(roomid:number) {

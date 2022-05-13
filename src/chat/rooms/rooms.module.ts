@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthMiddleware } from '../../user/auth.middleware';
 import { RoomsEntity } from './entities/room.entity';
 import { RoomBannedUsersEntity } from './entities/room_banned_users';
+import { RoomLogEntity } from './entities/room-log.entity';
 import { UserEntity } from '../../user/user.entity';
 import { AdminuserEntity } from '../../adminuser/adminuser.entity';
 import { RoomsService } from './rooms.service';
@@ -12,7 +13,7 @@ import { UserModule } from '../../user/user.module';
 import { AdminuserModule } from '../../adminuser/adminuser.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CompanyEntity, RoomsEntity, RoomBannedUsersEntity, UserEntity, AdminuserEntity]), UserModule, AdminuserModule],
+  imports: [TypeOrmModule.forFeature([CompanyEntity, RoomsEntity, RoomBannedUsersEntity,RoomLogEntity, UserEntity, AdminuserEntity]), UserModule, AdminuserModule],
   controllers: [RoomsController],
   providers: [RoomsService],
   exports: [RoomsService]
@@ -30,6 +31,7 @@ export class RoomsModule implements NestModule {
         {path: 'rooms/verify', method: RequestMethod.POST},
         {path: 'rooms/get-banned/:id', method: RequestMethod.GET},
         {path: 'rooms/remove-banned/:id', method: RequestMethod.GET},
+        {path: 'rooms/log/:id', method: RequestMethod.GET},
       );
   }
 }

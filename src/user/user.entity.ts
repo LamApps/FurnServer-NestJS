@@ -8,6 +8,7 @@ import { AppsEntity } from '../apps/apps.entity';
 import { CompanyRoleEntity } from '../company-role/company-role.entity';
 import { RoomsEntity } from '../chat/rooms/entities/room.entity';
 import { ChatLogEntity } from '../chat/private/entities/chat-log.entity';
+import { RoomLogEntity } from '../chat/rooms/entities/room-log.entity';
 import { ChatContactEntity } from '../chat/private/entities/chat-contact.entity';
 import { RoomBannedUsersEntity } from '../chat/rooms/entities/room_banned_users';
 
@@ -111,6 +112,11 @@ export class UserEntity {
   @OneToMany(type => ChatLogEntity, chat_log=>chat_log.recipient)
   @JoinColumn()
   chat_logs_rec: ChatLogEntity[];
+
+
+  @OneToMany(type => RoomLogEntity, room_log=>room_log.sender)
+  @JoinColumn()
+  room_logs: RoomLogEntity[];
 
   @OneToMany(type => ChatContactEntity, chat_contact=>chat_contact.owner)
   @JoinColumn()

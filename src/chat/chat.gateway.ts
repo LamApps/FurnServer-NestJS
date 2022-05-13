@@ -63,8 +63,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async onRoomMessage(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
-  ): Promise<any> {
+    ): Promise<any> {
     const roomName = client.data.room;
+    await this.roomService.saveRoomChatLog({
+      userId: client.data.userId,
+      company: client.data.company
+    }, roomName, data);
     if(roomName) {
       client.to(roomName).emit('roomMessage', {id: client.id, name: client.data.name, message: data, avatar: client.data.avatar, userId: client.data.userId});
     }

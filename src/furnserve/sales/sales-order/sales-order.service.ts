@@ -43,7 +43,7 @@ export class SalesOrderService {
       'inphone': dto.data.phone,
       'inacct': dto.data.accounttype,
       'doopen': dto.data.showOpen,
-      'inslsprn': dto.data.person,
+      'inslsprsn': dto.data.person,
     };
 
     return this.httpService.get(apiURL, {headers: headersRequest}).pipe(map((res:any)=>res.data));

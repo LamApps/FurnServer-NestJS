@@ -3,6 +3,7 @@ import { CompanyEntity } from '../../../company/company.entity';
 import { UserEntity } from '../../../user/user.entity';
 import { AdminuserEntity } from '../../../adminuser/adminuser.entity';
 import { RoomBannedUsersEntity } from './room_banned_users';
+import { RoomLogEntity } from './room-log.entity';
 
 @Entity('nest_rooms')
 export class RoomsEntity {
@@ -21,6 +22,10 @@ export class RoomsEntity {
   @OneToMany(type => RoomBannedUsersEntity, bans=>bans.room)
   @JoinColumn()
   bans: RoomBannedUsersEntity[];
+
+  @OneToMany(type => RoomLogEntity, logs=>logs.room)
+  @JoinColumn()
+  logs: RoomLogEntity[];
 
   @ManyToOne(type=>CompanyEntity, company=>company.id)
   company: CompanyEntity;

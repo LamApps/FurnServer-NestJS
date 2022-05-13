@@ -42,6 +42,11 @@ export class RoomsController {
     return this.roomsService.findPublicOne(+id);
   }
 
+  @Get('log/:id')
+  getLog(@Param('id') id: string) {
+    return this.roomsService.getLog(+id);
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomsService.update(+id, updateRoomDto);
