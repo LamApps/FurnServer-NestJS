@@ -79,6 +79,8 @@ export class SalesOrderService {
         return 'http://74.84.202.117:7080';
       case 7:
         return 'http://74.84.202.117:7085';
+      case 26:
+        return 'http://74.84.202.117:7090';
       default:
         return 'http://star.furnserve.com:8980';
     }

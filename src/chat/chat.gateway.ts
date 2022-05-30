@@ -224,4 +224,66 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     this.server.of('/').emit('userList', userList);
   }
+
+  async emitScreenUsers() {
+    const clientList = await this.server.in('screenShare').fetchSockets();
+    const userList = clientList.map(clientSocket=>({id: clientSocket.id, name: clientSocket.data.name, company: clientSocket.data.company, avatar: clientSocket.data.avatar, userId: clientSocket.data.userId, status: clientSocket.data.status}));
+    this.server.of('/').emit('usersScreen', userList);
+
+  }
+  @SubscribeMessage('startScreenShare')
+  async onStartScreenShare(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const room = 'screenShare';
+    client.leave(room);
+    client.join(room);
+    this.emitScreenUsers();
+  }
+
+  @SubscribeMessage('stopScreenShare')
+  async onStopScreenShare(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    const room = 'screenShare';
+    client.leave(room);
+    this.emitScreenUsers();
+  }
+
+  @SubscribeMessage('getScreenSharedUsers')
+  async onGetScreenSharedUsers(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    this.emitScreenUsers();
+  }
+
+  @SubscribeMessage('offer')
+  async onOfferScreenShare(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    console.log('offer', data.remoteId, client.id);
+    this.server.of('/').to(data.remoteId).emit('offer', {offer: data.offer, remoteId: client.id});
+  }
+
+  @SubscribeMessage('answer')
+  async onAnswerScreenShare(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    console.log('answer', data.remoteId, client.id);
+    this.server.of('/').to(data.remoteId).emit('answer', {answer: data.answer, remoteId: client.id});
+  }
+
+  @SubscribeMessage('iceCandidate')
+  async onIceCandidate(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Promise<any> {
+    console.log('iceCandidate', data, client.id);
+    this.server.of('/').to(data.remoteId).emit('iceCandidate', {candidate: data.candidate, remoteId: client.id});
+  }
 }

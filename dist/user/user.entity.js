@@ -16,6 +16,7 @@ const company_entity_1 = require("../company/company.entity");
 const company_role_entity_1 = require("../company-role/company-role.entity");
 const room_entity_1 = require("../chat/rooms/entities/room.entity");
 const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
+const room_log_entity_1 = require("../chat/rooms/entities/room-log.entity");
 const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
 const room_banned_users_1 = require("../chat/rooms/entities/room_banned_users");
 let UserEntity = class UserEntity {
@@ -153,6 +154,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "chat_logs_rec", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_log_entity_1.RoomLogEntity, room_log => room_log.sender),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], UserEntity.prototype, "room_logs", void 0);
 __decorate([
     typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.owner),
     typeorm_1.JoinColumn(),

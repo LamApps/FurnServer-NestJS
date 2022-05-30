@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { ApplicationModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -8,9 +9,14 @@ import { urlencoded, json } from 'express';
 declare const module: any;
 
 async function bootstrap() {
-  const appOptions = {cors: true};
+  const httpsOptions = {
+    key: fs.readFileSync('../ssl-key/private.key'),
+    cert: fs.readFileSync('../ssl-key/fullcert.crt'),
+  };
   const app = await NestFactory.create<NestExpressApplication>(
-    ApplicationModule, appOptions
+    ApplicationModule, {
+      httpsOptions,
+    }
   );
   app.enableCors();
   app.setGlobalPrefix('api');

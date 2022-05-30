@@ -18,6 +18,7 @@ const room_entity_1 = require("../chat/rooms/entities/room.entity");
 const chat_log_entity_1 = require("../chat/private/entities/chat-log.entity");
 const chat_contact_entity_1 = require("../chat/private/entities/chat-contact.entity");
 const room_banned_users_1 = require("../chat/rooms/entities/room_banned_users");
+const room_log_entity_1 = require("../chat/rooms/entities/room-log.entity");
 let AdminuserEntity = class AdminuserEntity {
     async hashPassword() {
         this.password = await argon2.hash(this.password);
@@ -116,6 +117,11 @@ __decorate([
     typeorm_1.JoinColumn(),
     __metadata("design:type", Array)
 ], AdminuserEntity.prototype, "chat_logs_rec", void 0);
+__decorate([
+    typeorm_1.OneToMany(type => room_log_entity_1.RoomLogEntity, room_log => room_log.sender_admin),
+    typeorm_1.JoinColumn(),
+    __metadata("design:type", Array)
+], AdminuserEntity.prototype, "room_logs", void 0);
 __decorate([
     typeorm_1.OneToMany(type => chat_contact_entity_1.ChatContactEntity, chat_contact => chat_contact.owner_admin),
     typeorm_1.JoinColumn(),
