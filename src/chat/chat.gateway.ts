@@ -172,7 +172,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
   ): Promise<any> {
     console.log('userLogin');
-    client.data = {name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId, status: 'success'};
+    client.data = {name: data.fullName, company: data.company, avatar: data.avatar, userId: data.userId, status: data.status};
     this.emitUserList();
   }
 
@@ -192,7 +192,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket, ...args: any[]) {
     const query = client.handshake.query;
-    client.data = {name: query.fullName, company: query.company, avatar: query.avatar, userId: query.userId, status: 'success'};
+    client.data = {name: query.fullName, company: query.company, avatar: query.avatar, userId: query.userId, status: query.status};
     
     this.emitUserList();
 

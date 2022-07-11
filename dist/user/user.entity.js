@@ -130,6 +130,10 @@ __decorate([
     __metadata("design:type", Number)
 ], UserEntity.prototype, "alert_fadetime", void 0);
 __decorate([
+    typeorm_1.Column({ default: 'success' }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "default_status", void 0);
+__decorate([
     typeorm_1.BeforeInsert(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),

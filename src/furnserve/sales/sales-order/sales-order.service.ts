@@ -33,8 +33,8 @@ export class SalesOrderService {
       'Content-Type': 'application/json', // afaik this one is not needed
       'context1': 'app',
       'context2': 'app123',
-      'begDate': dto.data.begindate,
-      'endDate': dto.data.enddate,
+      'begDate': dto.data.begindate || '',
+      'endDate': dto.data.enddate || '',
       'inso': dto.data.so,
       'ingov': dto.data.your,
       'incustno': dto.data.customer,

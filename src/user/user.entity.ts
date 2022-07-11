@@ -92,6 +92,9 @@ export class UserEntity {
   @Column({default: 5})
   alert_fadetime: number;
 
+  @Column({default: 'success'})
+  default_status: string;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await argon2.hash(this.password)

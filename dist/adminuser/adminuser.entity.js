@@ -99,6 +99,10 @@ __decorate([
     __metadata("design:type", Number)
 ], AdminuserEntity.prototype, "alert_fadetime", void 0);
 __decorate([
+    typeorm_1.Column({ default: 'success' }),
+    __metadata("design:type", String)
+], AdminuserEntity.prototype, "default_status", void 0);
+__decorate([
     typeorm_1.ManyToOne(type => roles_entity_1.RolesEntity, roles => roles.adminusers),
     __metadata("design:type", roles_entity_1.RolesEntity)
 ], AdminuserEntity.prototype, "roles", void 0);

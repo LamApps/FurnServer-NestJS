@@ -67,6 +67,9 @@ export class AdminuserEntity {
   @Column({default: 5})
   alert_fadetime: number;
 
+  @Column({default: 'success'})
+  default_status: string;
+
   @ManyToOne(type => RolesEntity, roles => roles.adminusers)
   roles: RolesEntity;
 

@@ -28,4 +28,5 @@ export class UpdateUserDto {
     chatalert: boolean;
     sound: boolean;
     alert_fadetime: number;
+    default_status: string;
 }

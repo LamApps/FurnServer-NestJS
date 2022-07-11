@@ -10,8 +10,10 @@ declare const module: any;
 
 async function bootstrap() {
   const httpsOptions = {
-    key: fs.readFileSync('../ssl-key/private.key'),
-    cert: fs.readFileSync('../ssl-key/fullcert.crt'),
+    // key: fs.readFileSync('../ssl-key/private.key'),
+    // cert: fs.readFileSync('../ssl-key/fullcert.crt'),
+    key: fs.readFileSync('./src/ssl-key/cert.key'),
+    cert: fs.readFileSync('./src/ssl-key/cert.pem'),
   };
   const app = await NestFactory.create<NestExpressApplication>(
     ApplicationModule, {
